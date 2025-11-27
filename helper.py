@@ -31,7 +31,7 @@ def main():
     CreateEnvironment(dir="autogen", **args.Args)
     InstallCDependencies()
     SetupEditor()
-    RunAutogen()
+    RunAutogen(**args.Args)
 
     if args.IsBuild:
         if args.IsCProject:
@@ -52,6 +52,8 @@ def main():
         RunEditor(**args.Args)
     elif args.IsRunExample:
         RunExample(**args.Args)
+    elif args.IsRunAutogen:
+        pass
     else:
         raise NotImplementedError(
             f"The command {args.args.command} is missing or not implemented."

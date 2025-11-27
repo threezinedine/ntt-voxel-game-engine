@@ -25,6 +25,15 @@ class Args:
 
         subparser = parser.add_subparsers(dest="command", required=True)
 
+        autogenParser = subparser.add_parser("autogen", help="Run the autogen process")
+
+        autogenParser.add_argument(
+            "--reload",
+            "-r",
+            action="store_true",
+            help="Reload all templates, ignoring cache",
+        )
+
         buildParser = subparser.add_parser("build", help="Build the project")
         buildParser.add_argument(
             "--project",
@@ -124,6 +133,10 @@ class Args:
     @property
     def IsRunExample(self) -> str:
         return self.args.command == "example"
+
+    @property
+    def IsRunAutogen(self) -> str:
+        return self.args.command == "autogen"
 
     @property
     def IsPythonProject(self) -> bool:

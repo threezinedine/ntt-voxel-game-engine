@@ -171,14 +171,14 @@ def InstallPythonDependencies(
 
 
 def RunAutogen(
+    reload: bool = False,
     **kwargs: Any,
 ) -> None:
     """
     Run the autogen script to generate necessary files.
     """
-
     logger.info("Generating needed files...")
     RunCommand(
-        f'"{GetPythonExecutable("autogen")}" main.py',
+        f'"{GetPythonExecutable("autogen")}" main.py {"--reload" if reload else ""}',
         cwd="autogen",
     )

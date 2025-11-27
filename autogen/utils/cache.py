@@ -1,4 +1,5 @@
 import os
+import shutil
 from .system_info import SYSTEM
 
 
@@ -53,3 +54,12 @@ def UpdateFileStamp(filePath: str) -> None:
     os.makedirs(os.path.dirname(stampFilePath), exist_ok=True)
     with open(stampFilePath, "w") as file:
         file.write("")
+
+
+def ClearCache() -> None:
+    """
+    Clear all cached stamp files.
+    """
+
+    tempDir = os.path.join(SYSTEM.BASE_DIR, "autogen", "temp")
+    shutil.rmtree(tempDir, ignore_errors=True)

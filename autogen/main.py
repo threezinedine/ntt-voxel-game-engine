@@ -1,12 +1,34 @@
 import os
 import json
+import argparse
 from jinja2 import Template as JinjaTemplate
 from models import Settings
 from dacite import from_dict
-from utils import SYSTEM, TEMPLATE_DATA, logger, IsFileModified, UpdateFileStamp
+from utils import (
+    SYSTEM,
+    TEMPLATE_DATA,
+    logger,
+    IsFileModified,
+    UpdateFileStamp,
+    ClearCache,
+)
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Autogen script")
+    parser.add_argument(
+        "--reload",
+        "-r",
+        action="store_true",
+        help="Force to re-generate files even if they are not modified",
+    )
+
+    args = parser.parse_args()
+
+    if args.reload:
+        logger.info("Force flag detected, re-generating all files...")
+        ClearCache()
+
     settings: Settings | None = None
 
     with open("settings.json") as f:
