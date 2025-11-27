@@ -1,17 +1,17 @@
 {
     "configurations": [
         {
-            "name": "Linux",
+            "name": "Engine",
             "includePath": [
                 "${workspaceFolder}/**"
             ],
             "defines": [
-                "PLATFORM_IS_LINUX"
+                "{{ PLATFORM_DEFINE }}"
             ],
-            "compilerPath": "/usr/bin/clang",
+            "compilerPath": "{{ COMPILER_PATH }}",
             "cStandard": "c17",
             "cppStandard": "c++17",
-            "intelliSenseMode": "linux-clang-x64"
+            "intelliSenseMode": "{{ INTELLISENSE_MODE }}"
         }
     ],
     "version": 4

@@ -3,6 +3,9 @@
     "templates": [
         {
             "filePath": "game-engine.code-workspace.in"
+        },
+        {
+            "filePath": "engine/.vscode/c_cpp_properties.json.in"
         }
     ]
 }
