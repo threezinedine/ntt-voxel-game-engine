@@ -1,4 +1,5 @@
 {% for enum in enums %}
+{% if "binding" in enum.annotations-%}
 class {{ enum.name }}(Enum):
     {% if enum.comment-%}
     """
@@ -7,14 +8,17 @@ class {{ enum.name }}(Enum):
     {% endif-%}
     {% if enum.constants|length > 0-%}
     {% for constant in enum.constants-%}
+    {% if "hidden" not in constant.annotations-%}
     {{ constant.name }} = {{ constant.value }}
     {% if constant.comment-%}
     """
     {{ constant.comment }}
     """
     {% endif-%}
+    {% endif-%}
     {% endfor %}
     {% else-%}
     pass
     {% endif %}
+{% endif-%}
 {% endfor %}
