@@ -10,7 +10,7 @@
     ],
     "templates": [
         {
-            "file": "game-engine.code-workspace.in"
+            "file": "meed.code-workspace.in"
         },
         {
             "file": "engine/.vscode/c_cpp_properties.json.in"

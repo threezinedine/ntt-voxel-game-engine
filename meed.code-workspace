@@ -1,0 +1,33 @@
+{
+    "folders": [
+        {
+            "name": "cmake",
+            "path": "cmake"
+        },
+        {
+            "name": "autogen",
+            "path": "autogen",
+            "python.defaultInterpreterPath": "/home/threezinedine/Projects/mcu-emulator-enviroment-development/autogen/venv/bin/python3"
+        },
+        {
+            "name": "engine",
+            "path": "engine"
+        },
+        {
+            "name": "editor",
+            "path": "editor",
+            "python.defaultInterpreterPath": "/home/threezinedine/Projects/mcu-emulator-enviroment-development/editor/venv/bin/python3"
+        },
+        {
+            "name": "config",
+            "path": "config"
+        },
+        {
+            "name": "meed-voxel-game-engine",
+            "path": "."
+        }
+    ],
+    "settings": {
+        "prettier.configPath": "/home/threezinedine/Projects/mcu-emulator-enviroment-development/.vscode/.prettierrc"
+    }
+}
