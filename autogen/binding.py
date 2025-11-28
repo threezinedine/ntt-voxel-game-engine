@@ -6,6 +6,10 @@ from models import Binding
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
 from utils import IsFileModified, logger
+from analyze.py_function import PyFunction, PyObject
+
+TAB_STRING = "    "
+parser: Parser | None = None
 
 
 def _CTypeConvert(cType: str) -> str:
@@ -24,6 +28,12 @@ def _CTypeConvert(cType: str) -> str:
     """
 
     cType = cType.strip()
+
+    if cType.startswith("enum "):
+        cType = cType[5:].strip()
+
+    global parser
+    assert parser is not None, "Parser is not initialized."
 
     if cType in [
         "unsigned int",
@@ -56,8 +66,123 @@ def _CTypeConvert(cType: str) -> str:
         return "str"
     elif cType == "void":
         return "None"
-    else:
+    elif cType in parser.AllCustomTypes:
         return cType
+    else:
+        logger.warning(f'Unknown C type "{cType}", mapping to "Any".')
+        return "Any"
+
+
+def _GetFunctionParameters(function: PyFunction) -> str:
+    """
+    Get the function parameters as a string.
+
+    Arguments
+    ---------
+    function : PyFunction
+        The function to get the parameters from.
+
+    Returns
+    -------
+    str
+        The function parameters as a string.
+    """
+
+    params: list[str] = []
+    for argument in function.arguments:
+        paramType = _CTypeConvert(argument.type)
+        params.append(f"{argument.name}: {paramType}")
+
+    return ", ".join(params)
+
+
+def _ConvertRawCCommentToPythonDocstring(pyObject: PyObject) -> str:
+    """
+    Convert a raw C comment to a Python docstring.
+
+    Arguments
+    ---------
+    comment : str
+        The raw C comment.
+
+    Returns
+    -------
+    str
+        The converted Python docstring.
+    """
+
+    assert pyObject is not None, "pyObject cannot be None."
+
+    if pyObject.rawComent is None:
+        return f"{TAB_STRING}"
+
+    lines = pyObject.rawComent.splitlines()
+    transferredLines: list[str] = []
+
+    for line in lines:
+        lineCharsCount = len(line)
+        index = 0
+        while index < lineCharsCount and line[index] in [
+            " ",
+            "/",
+            "*",
+        ]:
+            index += 1
+
+        if index == lineCharsCount:
+            continue
+
+        cutLine = line[index:].strip()
+        cutLine = cutLine.replace("@", ":")
+        transferredLines.append(cutLine)
+
+    return (
+        f'{TAB_STRING}"""\n{TAB_STRING}'
+        + f"\n{TAB_STRING}".join(transferredLines)
+        + f'\n{TAB_STRING}"""\n{TAB_STRING}'
+    )
+
+
+def _ConvertRawCCommentToPythonComment(pyObject: PyObject) -> str:
+    """
+    Convert a raw C comment to a Python comment.
+
+    Arguments
+    ---------
+    comment : str
+        The raw C comment.
+
+    Returns
+    -------
+    str
+        The converted Python comment.
+    """
+
+    assert pyObject is not None, "pyObject cannot be None."
+
+    if pyObject.rawComent is None:
+        return ""
+
+    lines = pyObject.rawComent.splitlines()
+    transferredLines: list[str] = []
+
+    for line in lines:
+        lineCharsCount = len(line)
+        index = 0
+        while index < lineCharsCount and line[index] in [
+            " ",
+            "/",
+            "*",
+        ]:
+            index += 1
+
+        if index == lineCharsCount:
+            continue
+
+        cutLine = line[index:].strip()
+        transferredLines.append(f"# {cutLine}")
+
+    return "\n".join(transferredLines) + "\n"
 
 
 def _IsFileValid(
@@ -226,6 +351,7 @@ def GenerateBindings(
     ), f'Template path "{templatePath}" does not exist.'
 
     logger.debug(f'Analysing binding file "{binding.file}"...')
+    global parser
     parser = Parser(filePath=filePath, content=testContent)
     parser.Parse()
 
@@ -242,6 +368,9 @@ def GenerateBindings(
         typedefs=parser.Typedefs,
         functions=parser.Functions,
         cTypeConvert=_CTypeConvert,
+        getFunctionParameters=_GetFunctionParameters,
+        convertRawCCommentToPythonDocstring=_ConvertRawCCommentToPythonDocstring,
+        convertRawCCommentToPythonComment=_ConvertRawCCommentToPythonComment,
     )
 
     if testContent is None:
@@ -251,7 +380,7 @@ def GenerateBindings(
         with open(outputPath, "w") as f:
             f.write(content)
 
-        dependenciesFiles.append(binding.template) 
+        dependenciesFiles.append(binding.template)
 
     logger.info(
         f'Generated binding file "{binding.output}" from "{binding.file}" using template "{binding.template}".'

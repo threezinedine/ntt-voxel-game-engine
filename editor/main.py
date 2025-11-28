@@ -1,4 +1,4 @@
-from Engine import meedPlatformSetColor
+from Engine import meedPlatformSetColor, MEEDConsoleColor
 
-meedPlatformSetColor(3)
+meedPlatformSetColor(MEEDConsoleColor.MEED_CONSOLE_COLOR_RED)
 print("Test")

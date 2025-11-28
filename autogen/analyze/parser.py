@@ -115,3 +115,25 @@ class Parser:
             The list of parsed functions.
         """
         return self._pyFunctions
+
+    @property
+    def AllCustomTypes(self) -> list[str]:
+        """
+        Returns all custom types defined in the parsed C header file.
+
+        Returns
+        -------
+        list[str]
+            The list of all custom types.
+        """
+        customTypes: list[str] = []
+        for struct in self._pyStructs:
+            if "binding" in struct.annotations:
+                customTypes.append(struct.name)
+        for enum in self._pyEnums:
+            if "binding" in enum.annotations:
+                customTypes.append(enum.name)
+        for typedef in self._pyTypedefs:
+            if "binding" in typedef.annotations:
+                customTypes.append(typedef.name)
+        return customTypes

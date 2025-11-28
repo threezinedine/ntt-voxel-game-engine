@@ -1,5 +1,6 @@
 {% for typedef in typedefs-%}
 {% if "binding" in typedef.annotations-%}
+{{ convertRawCCommentToPythonComment(typedef)-}}
 {{ typedef.name }}: TypeAlias = {{ cTypeConvert(typedef.underlyingType) }}
 {% endif-%}
 {% endfor-%}

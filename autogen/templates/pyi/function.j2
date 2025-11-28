@@ -1,0 +1,7 @@
+{% for function in functions-%}
+{% if "binding" in function.annotations-%}
+def {{ function.name }}({{ getFunctionParameters(function) }}) -> {{ cTypeConvert(function.returnType) }}:
+{{ convertRawCCommentToPythonDocstring(function)-}}
+    ...
+{% endif-%}
+{% endfor-%}

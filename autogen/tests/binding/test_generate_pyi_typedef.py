@@ -24,3 +24,24 @@ cstr_t: TypeAlias = str
 """
 
     AssertBindingResult(expect, result)
+
+
+def test_generate_typedef_with_comment():
+    binding: Binding = Binding(
+        template="autogen/templates/pyi/typedef.j2",
+    )
+
+    result, _ = GenerateBindings(
+        binding,
+        testContent="""
+/// This is a typedef for a 32-bit unsigned integer.
+typedef __attribute__((annotate("binding"))) unsigned int uint32_t; 
+""",
+    )
+
+    expect = """
+# This is a typedef for a 32-bit unsigned integer.
+uint32_t: TypeAlias = int
+"""
+
+    AssertBindingResult(expect, result)
