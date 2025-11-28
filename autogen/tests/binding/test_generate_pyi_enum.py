@@ -56,7 +56,7 @@ def test_generate_enum_with_comments():
         binding,
         testContent="""
 /**
- * @brief This is an enum with comments.
+ * This is an enum with comments.
  */
 enum __attribute__((annotate("binding"))) Color {
     RED, ///< Red color
