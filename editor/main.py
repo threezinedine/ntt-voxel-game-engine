@@ -1,12 +1,17 @@
-from Engine import (
-    meedPlatformPrint,
-    meedPlatformSetConsoleConfig,
-    MEEDConsoleColor,
-    MEEDPlatformConsoleConfig,
-)
+import sys
+from PyQt6.QtWidgets import QApplication
+from views import EditorMainWindow
 
-config = MEEDPlatformConsoleConfig()
-config.color = MEEDConsoleColor.MEED_CONSOLE_COLOR_RED
 
-meedPlatformSetConsoleConfig(config)
-meedPlatformPrint("Hello, Meed Platform!\n")
+def main():
+    app = QApplication(sys.argv)
+    mainWindow = EditorMainWindow()
+    mainWindow.showMaximized()
+    sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:
+        pass
