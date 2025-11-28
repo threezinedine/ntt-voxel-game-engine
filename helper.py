@@ -5,6 +5,7 @@ from config import (
     RunEditor,
     RunAutogen,
     RunExample,
+    BuildEditor,
     SetupLogging,
     OpenDesigner,
     BuildCProject,
@@ -39,6 +40,8 @@ def main():
     if args.IsBuild:
         if args.IsCProject:
             BuildCProject(**args.Args)
+        elif args.IsPythonProject:
+            BuildEditor(**args.Args)
     elif args.IsPackage:
         if args.IsPythonProject:
             InstallPythonDependencies(**args.Args)

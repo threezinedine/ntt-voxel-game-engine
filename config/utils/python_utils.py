@@ -134,6 +134,38 @@ def GetDesignerExecutable(
         )
 
 
+def GetPyinstallerExecutable(
+    project: str,
+) -> str:
+    """
+    Get the path to the PyInstaller executable for a given project.
+    Arguments
+    ---------
+    project : str
+        The project to get the PyInstaller executable for.
+    Returns
+    -------
+    str
+        The path to the PyInstaller executable.
+    """
+    if SYSTEM.IsWindowsPlatform:
+        return os.path.join(
+            SYSTEM.BaseDir,
+            project,
+            "venv",
+            "Scripts",
+            "pyinstaller.exe",
+        )
+    else:
+        return os.path.join(
+            SYSTEM.BaseDir,
+            project,
+            "venv",
+            "bin",
+            "pyinstaller",
+        )
+
+
 def CreateEnvironment(
     dir: str,
     force: bool = False,
@@ -247,6 +279,33 @@ def RunEditor(
         f'"{GetPythonExecutable("editor")}" main.py',
         cwd="editor",
     )
+
+
+def BuildEditor(
+    **kwargs: Any,
+) -> None:
+    """
+    Build the editor project.
+    """
+    logger.info("Building editor project...")
+
+    RunCommand(
+        f'"{GetPyinstallerExecutable("editor")}" --onefile main.py --name Meed',
+        cwd="editor",
+    )
+
+    if SYSTEM.IsWindowsPlatform:
+        distPath = os.path.join(SYSTEM.BaseDir, "editor", "dist", "Meed.exe")
+        outputPath = os.path.join(SYSTEM.BaseDir, "bin", "Meed.exe")
+    else:
+        distPath = os.path.join(SYSTEM.BaseDir, "editor", "dist", "Meed")
+        outputPath = os.path.join(SYSTEM.BaseDir, "bin", "Meed")
+
+    os.makedirs(os.path.join(SYSTEM.BaseDir, "bin"), exist_ok=True)
+    shutil.copyfile(distPath, outputPath)
+
+    if SYSTEM.IsLinuxPlatform:
+        os.chmod(outputPath, 0o755)
 
 
 def OpenDesigner(

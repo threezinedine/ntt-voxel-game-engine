@@ -420,3 +420,5 @@ externals/
 
 *-dist/
 game-engine.code-workspace
+
+bin/
