@@ -6,9 +6,7 @@ from tests.utils import AssertBindingResult
 
 def test_generate_simple_enum():
     binding: Binding = Binding(
-        file="",
         template="autogen/templates/pyi/enum.j2",
-        output="",
     )
 
     result = GenerateBindings(
@@ -30,9 +28,7 @@ class Color(Enum):
 
 def test_generate_empty_enum():
     binding: Binding = Binding(
-        file="",
         template="autogen/templates/pyi/enum.j2",
-        output="",
     )
 
     result = GenerateBindings(
@@ -53,9 +49,7 @@ class Empty(Enum):
 
 def test_generate_enum_with_comments():
     binding: Binding = Binding(
-        file="",
         template="autogen/templates/pyi/enum.j2",
-        output="",
     )
 
     result = GenerateBindings(
@@ -93,9 +87,7 @@ class Color(Enum):
 
 def test_generate_enum_with_hidden_annotations():
     binding: Binding = Binding(
-        file="",
         template="autogen/templates/pyi/enum.j2",
-        output="",
     )
 
     result = GenerateBindings(
@@ -121,9 +113,7 @@ class Color(Enum):
 
 def test_generate_enum_with_non_binding_annotation():
     binding: Binding = Binding(
-        file="",
         template="autogen/templates/pyi/enum.j2",
-        output="",
     )
 
     result = GenerateBindings(

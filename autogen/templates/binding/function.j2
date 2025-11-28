@@ -1,0 +1,5 @@
+{% for function in functions-%}
+{% if "binding" in function.annotations-%}
+{{ "    " }}module.def("{{ function.name }}", &{{ function.name }}, {%if function.comment -%}"{{ function.comment }}"{% else-%}"No docstring"{% endif-%});
+{% endif-%}
+{% endfor-%}

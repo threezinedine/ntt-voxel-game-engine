@@ -6,6 +6,7 @@ from models import Binding
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
 from utils import IsFileModified, UpdateFileStamp, logger
+from utils.cache import ClearCache
 
 
 def _CTypeConvert(cType: str) -> str:
@@ -165,6 +166,7 @@ def _AllDependenciesFiles(
 def GenerateBindings(
     binding: Binding,
     testContent: str | None = None,
+    force: bool = False,
 ) -> str:
     """
     The tools creating the binding files.
@@ -176,10 +178,16 @@ def GenerateBindings(
 
     testContent: str(optional)
         Just be used for testing
+
+    force : bool(optional)
+        Force regeneration of the binding file.
     """
     filePath = os.path.join(SYSTEM.BASE_DIR, binding.file)
     templatePath = os.path.join(SYSTEM.BASE_DIR, binding.template)
     outputPath = os.path.join(SYSTEM.BASE_DIR, binding.output)
+
+    if force:
+        ClearCache()
 
     dependenciesFiles: list[str] = []
 
@@ -209,7 +217,7 @@ def GenerateBindings(
 
         if (
             not hasModified
-            and not IsFileModified(templatePath)
+            and not IsFileModified(binding.template)
             and os.path.exists(outputPath)
         ):
             logger.debug(
@@ -252,7 +260,7 @@ def GenerateBindings(
             for depFile in dependenciesFiles:
                 UpdateFileStamp(depFile)
 
-        UpdateFileStamp(templatePath)
+        UpdateFileStamp(binding.template)
 
     logger.info(
         f'Generated binding file "{binding.output}" from "{binding.file}" using template "{binding.template}".'

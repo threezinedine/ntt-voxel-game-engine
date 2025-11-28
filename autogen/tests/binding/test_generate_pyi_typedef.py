@@ -6,9 +6,7 @@ from tests.utils import AssertBindingResult
 
 def test_generate_simple_typedef():
     binding: Binding = Binding(
-        file="",
         template="autogen/templates/pyi/typedef.j2",
-        output="",
     )
 
     result = GenerateBindings(

@@ -29,4 +29,4 @@ void meedPlatformSetColor(enum MEEDConsoleColor color) MEED_BINDING;
  * @param format The format string.
  * @param ... The format arguments.
  */
-void meedPlatformPrint(const char *format, ...) MEED_BINDING;
+void meedPlatformPrint(const char *format, ...);

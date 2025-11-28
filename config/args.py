@@ -36,10 +36,9 @@ class Args:
 
         buildParser = subparser.add_parser("build", help="Build the project")
         buildParser.add_argument(
-            "--project",
-            "-p",
+            "project",
             choices=["engine", "editor"],
-            default="editor",
+            help="Project to build (engine or editor)",
         )
 
         packageSubParser = subparser.add_parser(

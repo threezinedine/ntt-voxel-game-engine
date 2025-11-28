@@ -10,4 +10,11 @@ endmacro()
 
 macro(MEEDSetup)
     set(EXTERNALS_DIR "{{ BASE_DIR }}/externals")
+    set(CMAKE_MODULE_DIR "{{ BASE_DIR }}/cmake")
+endmacro()
+
+macro(MEEDFindPackage PACKAGE_NAME FOLDER)
+    set(CMAKE_FOLDER ${FOLDER})
+    find_package(${PACKAGE_NAME} REQUIRED PATHS ${CMAKE_MODULE_DIR})
+    unset(CMAKE_FOLDER CACHE)
 endmacro()

@@ -1,4 +1,5 @@
 import os
+import sysconfig
 
 
 class SystemInfo:
@@ -13,6 +14,9 @@ class SystemInfo:
         elif self.IsLinuxPlatform:
             self._compilerPath = "/usr/bin/clang"
             self._intelliSenseMode = "linux-clang-x64"
+
+        self._pythonIncludeDir = sysconfig.get_path("include")
+
 
     @property
     def BASE_DIR(self) -> str:
@@ -45,6 +49,10 @@ class SystemInfo:
         else:
             raise NotImplementedError("Unsupported platform")
 
+    @property
+    def PythonIncludeDir(self) -> str:
+        return self._pythonIncludeDir
+
 
 SYSTEM = SystemInfo()
 TEMPLATE_DATA = dict(
@@ -55,4 +63,5 @@ TEMPLATE_DATA = dict(
     COMPILER_PATH=SYSTEM.CCompiler,
     INTELLISENSE_MODE=SYSTEM.IntelliSenseMode,
     PYTHON_INTERPRETER=SYSTEM.PythonInterpreter,
+    PYTHON_INCLUDE_DIR=SYSTEM.PythonIncludeDir,
 )

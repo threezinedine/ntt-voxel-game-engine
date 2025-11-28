@@ -1,10 +1,10 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
 class Binding:
-    file: str
-    template: str
-    output: str
-    dependencies: list[str] | None = None
-    extensions: list[str] | None = None
+    file: str = field(default="")
+    template: str = field(default="")
+    output: str = field(default="")
+    dependencies: list[str] | None = field(default=None)
+    extensions: list[str] | None = field(default=None)

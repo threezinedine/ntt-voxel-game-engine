@@ -3,7 +3,9 @@
         {
             "name": "Engine",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/../externals/**",
+                "{{ PYTHON_INCLUDE_DIR }}"
             ],
             "defines": [
                 "{{ PLATFORM_DEFINE }}",

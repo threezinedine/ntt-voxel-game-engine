@@ -43,7 +43,7 @@ def main():
         GenerateTemplate(template)
 
     for binding in settings.bindings:
-        GenerateBindings(binding)
+        GenerateBindings(binding, force=args.reload)
 
 
 if __name__ == "__main__":
