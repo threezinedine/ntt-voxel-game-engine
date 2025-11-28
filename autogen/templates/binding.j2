@@ -12,6 +12,8 @@ PYBIND11_MODULE(MEEDEngine, module)
 
     {% include "autogen/templates/binding/enum.j2" %}
 
+    {% include "autogen/templates/binding/struct.j2" %}
+
     {% include "autogen/templates/binding/function.j2" %}
 }
 // clang-format on

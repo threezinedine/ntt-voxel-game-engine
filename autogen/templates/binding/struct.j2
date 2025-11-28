@@ -1,0 +1,11 @@
+{% for struct in structs-%}
+{% if "binding" in struct.annotations-%}
+py::class_<{{ struct.name }}>(module, "{{ struct.name }}")
+    .def(py::init<>())
+    {% for field in struct.fields-%}
+    {% if "hidden" not in field.annotations-%}
+    .def_readwrite("{{ field.name }}", &{{ struct.name }}::{{ field.name }})
+    {% endif-%}
+    {% endfor-%};
+{% endif-%}
+{% endfor-%}

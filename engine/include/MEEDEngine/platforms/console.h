@@ -18,15 +18,26 @@ enum MEED_BINDING MEEDConsoleColor : u8
 	MEED_CONSOLE_COLOR_BOLD,
 };
 
+struct MEED_BINDING MEEDPlatformConsoleConfig
+{
+	enum MEEDConsoleColor color;
+};
+
 /**
  * Modify the following content's color which is used by `meedPlatformPrint`.
  * @param color The color to set the console to.
  */
-void meedPlatformSetColor(enum MEEDConsoleColor color) MEED_BINDING;
+void meedPlatformSetConsoleConfig(struct MEEDPlatformConsoleConfig config) MEED_BINDING;
 
 /**
  * Print formatted content to the console.
  * @param format The format string.
  * @param ... The format arguments.
  */
-void meedPlatformPrint(const char *format, ...);
+void meedPlatformFPrint(const char *format, ...);
+
+/**
+ * Print a string to the console.
+ * @param str The string to print.
+ */
+void meedPlatformPrint(const char *str) MEED_BINDING;
