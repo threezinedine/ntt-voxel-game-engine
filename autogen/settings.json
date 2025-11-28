@@ -3,7 +3,7 @@
         {
             "file": "engine/include/MEEDEngine/MEEDEngine.h",
             "template": "autogen/templates/pyi.j2",
-            "output": "engine/tmp/__init__.pyi",
+            "output": "editor/Engine/__init__.pyi",
             "dependencies": ["engine/include/MEEDEngine"],
             "extensions": [".h"]
         }
@@ -14,6 +14,9 @@
         },
         {
             "file": "engine/.vscode/c_cpp_properties.json.in"
+        },
+        {
+            "file": "cmake/MEEDConfigure.cmake.in"
         }
     ]
 }
