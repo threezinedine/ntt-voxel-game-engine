@@ -1,0 +1,11 @@
+{% for enum in enums-%}
+{% if "binding" in enum.annotations-%}
+py::enum_<{{ enum.name }}>(module, "{{ enum.name }}")
+{% for contstant in enum.constants-%}
+{% if "hidden" not in contstant.annotations-%}
+    {{ "    " }}.value("{{ contstant.name }}", {{ enum.name }}::{{ contstant.name }})
+{% endif-%}
+{% endfor-%}
+    {{ "    " }}.export_values();
+{% endif-%}
+{% endfor-%}
