@@ -9,7 +9,7 @@ def test_generate_simple_typedef():
         template="autogen/templates/pyi/typedef.j2",
     )
 
-    result = GenerateBindings(
+    result, _ = GenerateBindings(
         binding,
         testContent="""
 typedef __attribute__((annotate("binding"))) unsigned int uint32_t;

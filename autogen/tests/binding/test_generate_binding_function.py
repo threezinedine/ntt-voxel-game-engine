@@ -10,7 +10,7 @@ def test_generate_simple_binding_function():
         template="autogen/templates/binding/function.j2",
     )
 
-    content = GenerateBindings(binding, testContent="""
+    result, _ = GenerateBindings(binding, testContent="""
 void __attribute__((annotate("binding"))) simple_function(int a, float b);
 """)
 
@@ -18,7 +18,7 @@ void __attribute__((annotate("binding"))) simple_function(int a, float b);
     module.def("simple_function", &simple_function, "No docstring");
 """
 
-    AssertBindingResult(expected, content)
+    AssertBindingResult(expected, result)
 
 def test_generate_function_with_comments():
     binding = Binding(
@@ -26,7 +26,7 @@ def test_generate_function_with_comments():
         template="autogen/templates/binding/function.j2",
     )
 
-    content = GenerateBindings(binding, testContent="""
+    result, _ = GenerateBindings(binding, testContent="""
 /**
  * @brief This is a simple function.
  */
@@ -37,7 +37,7 @@ void __attribute__((annotate("binding"))) simple_function(int a, float b);
     module.def("simple_function", &simple_function, "This is a simple function.");
 """
 
-    AssertBindingResult(expected, content)
+    AssertBindingResult(expected, result)
 
 def test_generate_function_without_binding_annotation():
     binding = Binding(
@@ -45,13 +45,13 @@ def test_generate_function_without_binding_annotation():
         template="autogen/templates/binding/function.j2",
     )
 
-    content = GenerateBindings(binding, testContent="""
+    result, _ = GenerateBindings(binding, testContent="""
 void simple_function(int a, float b);
 """)
     
     expected = """"""
 
-    AssertBindingResult(expected, content)
+    AssertBindingResult(expected, result)
 
 def test_generate_multiple_functions():
     binding = Binding(
@@ -59,7 +59,7 @@ def test_generate_multiple_functions():
         template="autogen/templates/binding/function.j2",
     )
 
-    content = GenerateBindings(binding, testContent="""
+    result, _ = GenerateBindings(binding, testContent="""
 void __attribute__((annotate("binding"))) function_one(int a);
 float __attribute__((annotate("binding"))) function_two(float b, double c);
 """)
@@ -69,4 +69,4 @@ float __attribute__((annotate("binding"))) function_two(float b, double c);
     module.def("function_two", &function_two, "No docstring");
 """
 
-    AssertBindingResult(expected, content)
+    AssertBindingResult(expected, result)

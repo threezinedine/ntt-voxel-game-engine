@@ -9,7 +9,7 @@ def test_generate_simple_enum():
         template="autogen/templates/pyi/enum.j2",
     )
 
-    result = GenerateBindings(
+    result, _ = GenerateBindings(
         binding,
         testContent="""
 enum __attribute__((annotate("binding"))) Color {
@@ -31,7 +31,7 @@ def test_generate_empty_enum():
         template="autogen/templates/pyi/enum.j2",
     )
 
-    result = GenerateBindings(
+    result, _ = GenerateBindings(
         binding,
         testContent="""
 enum __attribute__((annotate("binding"))) Empty {
@@ -52,7 +52,7 @@ def test_generate_enum_with_comments():
         template="autogen/templates/pyi/enum.j2",
     )
 
-    result = GenerateBindings(
+    result, _ = GenerateBindings(
         binding,
         testContent="""
 /**
@@ -90,7 +90,7 @@ def test_generate_enum_with_hidden_annotations():
         template="autogen/templates/pyi/enum.j2",
     )
 
-    result = GenerateBindings(
+    result, _ = GenerateBindings(
         binding,
         testContent="""
 enum __attribute__((annotate("binding"))) Color {
@@ -116,7 +116,7 @@ def test_generate_enum_with_non_binding_annotation():
         template="autogen/templates/pyi/enum.j2",
     )
 
-    result = GenerateBindings(
+    result, _ = GenerateBindings(
         binding,
         testContent="""
 enum Color {

@@ -3,6 +3,7 @@ import logging
 import argparse
 from models import Settings
 from dacite import from_dict
+from utils import UpdateFileStamp
 from binding import GenerateBindings
 from utils import logger, ClearCache
 from template_gen import GenerateTemplate
@@ -36,6 +37,8 @@ def main():
 
     settings: Settings | None = None
 
+    dependencies: set[str] = set()
+
     with open("settings.json") as f:
         settings = from_dict(data_class=Settings, data=json.loads(f.read()))
 
@@ -43,8 +46,12 @@ def main():
         GenerateTemplate(template)
 
     for binding in settings.bindings:
-        GenerateBindings(binding, force=args.reload)
+        _, deps = GenerateBindings(binding)
+        for dep in deps:
+            dependencies.add(dep)
 
+    for dependency in dependencies:
+        UpdateFileStamp(dependency)
 
 if __name__ == "__main__":
     main()

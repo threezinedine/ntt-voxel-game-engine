@@ -5,8 +5,7 @@ from analyze import Parser
 from models import Binding
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
-from utils import IsFileModified, UpdateFileStamp, logger
-from utils.cache import ClearCache
+from utils import IsFileModified, logger
 
 
 def _CTypeConvert(cType: str) -> str:
@@ -166,8 +165,7 @@ def _AllDependenciesFiles(
 def GenerateBindings(
     binding: Binding,
     testContent: str | None = None,
-    force: bool = False,
-) -> str:
+) -> tuple[str, list[str]]:
     """
     The tools creating the binding files.
 
@@ -185,9 +183,6 @@ def GenerateBindings(
     filePath = os.path.join(SYSTEM.BASE_DIR, binding.file)
     templatePath = os.path.join(SYSTEM.BASE_DIR, binding.template)
     outputPath = os.path.join(SYSTEM.BASE_DIR, binding.output)
-
-    if force:
-        ClearCache()
 
     dependenciesFiles: list[str] = []
 
@@ -223,7 +218,7 @@ def GenerateBindings(
             logger.debug(
                 f'Binding file "{binding.file}" and its dependencies have not been modified, skipping...'
             )
-            return ""
+            return ("", [])
 
     assert os.path.exists(filePath), f'Binding file "{filePath}" does not exist.'
     assert os.path.exists(
@@ -256,14 +251,10 @@ def GenerateBindings(
         with open(outputPath, "w") as f:
             f.write(content)
 
-        if binding.dependencies is not None:
-            for depFile in dependenciesFiles:
-                UpdateFileStamp(depFile)
-
-        UpdateFileStamp(binding.template)
+        dependenciesFiles.append(binding.template) 
 
     logger.info(
         f'Generated binding file "{binding.output}" from "{binding.file}" using template "{binding.template}".'
     )
 
-    return content
+    return (content, dependenciesFiles)
