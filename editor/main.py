@@ -6,7 +6,7 @@ from Engine import (
 )
 
 config = MEEDPlatformConsoleConfig()
-config.color = MEEDConsoleColor.MEED_CONSOLE_COLOR_GREEN
+config.color = MEEDConsoleColor.MEED_CONSOLE_COLOR_RED
 
 meedPlatformSetConsoleConfig(config)
-meedPlatformPrint("Hello, Meed Platform!")
+meedPlatformPrint("Hello, Meed Platform!\n")

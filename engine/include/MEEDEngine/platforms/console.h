@@ -18,9 +18,12 @@ enum MEED_BINDING MEEDConsoleColor : u8
 	MEED_CONSOLE_COLOR_BOLD,
 };
 
+/**
+ * Configuration structure for the console platform.
+ */
 struct MEED_BINDING MEEDPlatformConsoleConfig
 {
-	enum MEEDConsoleColor color;
+	enum MEEDConsoleColor color; ///< The color to set the console to.
 };
 
 /**

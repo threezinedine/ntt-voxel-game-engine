@@ -32,6 +32,9 @@ def _CTypeConvert(cType: str) -> str:
     if cType.startswith("enum "):
         cType = cType[5:].strip()
 
+    if cType.startswith("struct "):
+        cType = cType[7:].strip()
+
     global parser
     assert parser is not None, "Parser is not initialized."
 
