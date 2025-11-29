@@ -46,7 +46,7 @@ class SystemInfo:
 
     @property
     def CProjects(self) -> list[str]:
-        return ["engine"]
+        return ["engine", "app"]
 
     @property
     def CCompiler(self) -> str:

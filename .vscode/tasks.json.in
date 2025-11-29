@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Engine",
+            "type": "shell",
+            "command": "{{ PYTHON_COMMAND }} helper.py build engine",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build Application",
+            "type": "shell",
+            "command": "{{ PYTHON_COMMAND }} helper.py build app",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

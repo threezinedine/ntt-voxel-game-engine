@@ -24,8 +24,9 @@ void* meedPlatformMalloc(meedSize size);
  * Frees a previously allocated block of memory.
  *
  * @param ptr A pointer to the memory block to free.
+ * @param size The size of memory to free in bytes (used for tracking purposes).
  */
-void meedPlatformFree(void* ptr);
+void meedPlatformFree(void* ptr, meedSize size);
 
 /**
  * Copies a block of memory from a source to a destination.
@@ -53,3 +54,30 @@ void* meedPlatformMemorySet(void* pDest, u8 value, meedSize size);
  * In `DEBUG` mode, it may also check for memory leaks.
  */
 void meedPlatformMemoryShutdown();
+
+/**
+ * Helper macro to allocate memory for a specific type.
+ * @param type The type of the object to allocate memory for.
+ * @return A pointer to the allocated memory cast to the specified type.
+ */
+#define MEED_MALLOC(type) (type*)meedPlatformMalloc(sizeof(type))
+
+/**
+ * Helper macro to allocate memory for an array of a specific type.
+ * @param type The type of the objects in the array.
+ * @param count The number of objects to allocate memory for.
+ * @return A pointer to the allocated memory cast to the specified type.
+ */
+#define MEED_MALLOC_ARRAY(type, count) (type*)meedPlatformMalloc(sizeof(type) * (count))
+
+/**
+ * Helper macro to free memory allocated for a specific type.
+ * @param ptr A pointer to the memory block to free.
+ */
+#define MEED_FREE(ptr, type) meedPlatformFree((void*)(ptr), sizeof(type))
+
+/**
+ * Helper macro to free memory allocated for an array of a specific type.
+ * @param ptr A pointer to the memory block to free.
+ */
+#define MEED_FREE_ARRAY(ptr, type, count) meedPlatformFree((void*)(ptr), sizeof(type) * (count))

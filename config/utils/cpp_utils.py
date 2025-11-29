@@ -49,7 +49,7 @@ def InstallCDependencies(
 
 
 def BuildCProject(
-    project: str,
+    project: str = "",
     type: str = "debug",
     **kwargs: Any,
 ) -> None:
@@ -134,6 +134,48 @@ def RunExample(
             RunCommand(f"./{example}", cwd=exampleDir)
 
 
+def RunApplication(
+    type: str = "debug",
+    **kwargs: Any,
+) -> None:
+    """
+    Runs the main application.
+
+    Arguments:
+        type (str): The build type, either 'debug' or 'release'. Defaults to 'debug'.
+    """
+    if SYSTEM.IsWindowsPlatform:
+        appDir = os.path.join(
+            SYSTEM.BaseDir,
+            "app",
+            "build",
+            type,
+            type.capitalize(),
+        )
+    elif SYSTEM.IsLinuxPlatform:
+        appDir = os.path.join(
+            SYSTEM.BaseDir,
+            "app",
+            "build",
+            type,
+        )
+    else:
+        raise NotImplementedError(
+            "Current platform is not supported for running the application."
+        )
+
+    BuildCProject(**(kwargs | dict(project="app")))
+
+    logger.debug(f"Application directory resolved to: {appDir}")
+
+    logger.info(f"Running application...")
+
+    if SYSTEM.IsWindowsPlatform:
+        RunCommand(f"MEEDApp.exe", cwd=appDir)
+    elif SYSTEM.IsLinuxPlatform:
+        RunCommand(f"./MEEDApp", cwd=appDir)
+
+
 def BuildEngineWebLib(
     **kwargs: Any,
 ) -> None:
@@ -146,7 +188,7 @@ def BuildEngineWebLib(
     engineDir = os.path.join(SYSTEM.BaseDir, "engine")
 
     RunCommand(
-        f"{VARIABLES.EMCMAKE} cmake -S . -B build/webruntime -DWEBBUILD=ON -DCMAKE_BUILD_TYPE=Release -DEMCC_FORCE_STDLIBS=ON",
+        f"{VARIABLES.EMCMAKE} cmake -S . -B build/webruntime -DCMAKE_BUILD_TYPE=Release -DEMCC_FORCE_STDLIBS=ON",
         cwd=engineDir,
     )
 

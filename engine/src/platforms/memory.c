@@ -1,9 +1,10 @@
 #include "MEEDEngine/platforms/memory.h"
+#include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 
 #if PLATFORM_IS_LINUX
 #include <execinfo.h>
+#include <string.h>
 #else
 #error "Backtrace capturing is not implemented for this platform."
 #endif
@@ -42,14 +43,16 @@ static struct MemoryNode* s_pMemoryTail = NULL;
 static meedSize s_totalAllocatedMemory = 0;
 
 /**
- * Internal function for allocating memory without tracking but adding the allocation size to the total allocated memory.
+ * Internal function for allocating memory without tracking but adding the allocation size to the total allocated
+ * memory.
  * @param size The size of memory to allocate in bytes.
  * @return A pointer to the allocated memory block.
  */
 static void* _malloc(meedSize size);
 
 /**
- * Internal function for freeing memory without tracking but subtracting the allocation size from the total allocated memory.
+ * Internal function for freeing memory without tracking but subtracting the allocation size from the total allocated
+ * memory.
  * @param ptr A pointer to the memory block to free.
  * @param size The size of memory to free in bytes.
  */
@@ -103,12 +106,18 @@ void* meedPlatformMalloc(meedSize size)
 
 static struct MemoryNode* _findNodeByPtr(void* ptr);
 
-void meedPlatformFree(void* ptr)
+void meedPlatformFree(void* ptr, meedSize size)
 {
 	MEED_ASSERT(s_isInitialized == MEED_TRUE);
 
 	struct MemoryNode* pNode = _findNodeByPtr(ptr);
 	MEED_ASSERT_MSG(pNode != MEED_NULL, "Attempting to free untracked or already freed memory at address %p.", ptr);
+
+	MEED_ASSERT_MSG(pNode->size == size,
+					"Freeing memory size mismatch at address %p: expected %zu bytes, got %zu bytes.",
+					ptr,
+					pNode->size,
+					size);
 
 	_free(ptr, pNode->size); // Note: size should be tracked and passed here for accurate memory tracking.
 
@@ -174,8 +183,9 @@ void meedPlatformMemoryShutdown()
 
 	// Shutdown complete.
 
-	MEED_ASSERT_MSG(
-		s_totalAllocatedMemory == 0, "Memory leak detected: Total allocated memory is %zu bytes during shutdown.", s_totalAllocatedMemory);
+	MEED_ASSERT_MSG(s_totalAllocatedMemory == 0,
+					"Memory leak detected: Total allocated memory is %zu bytes during shutdown.",
+					s_totalAllocatedMemory);
 }
 
 static void* _malloc(meedSize size)
@@ -195,7 +205,7 @@ static struct MemoryNode* _findNodeByPtr(void* ptr)
 	struct MemoryNode* pCurrent = s_pMemoryHead;
 	while (pCurrent != MEED_NULL)
 	{
-		if (pCurrent->ptr == ptr)
+		if (pCurrent->ptr == (void*)ptr)
 		{
 			return pCurrent;
 		}

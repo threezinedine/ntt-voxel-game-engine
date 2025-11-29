@@ -423,3 +423,6 @@ meed.code-workspace
 
 bin/
 config/conf.py
+
+.vscode/launch.json
+.vscode/tasks.json

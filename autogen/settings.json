@@ -32,10 +32,10 @@
             "file": "cmake/MEEDConfigure.cmake.in"
         },
         {
-            "file": "engine/.vscode/launch.json.in"
+            "file": ".vscode/launch.json.in"
         },
         {
-            "file": "engine/.vscode/tasks.json.in"
+            "file": ".vscode/tasks.json.in"
         },
         {
             "file": "config/conf.py.in"

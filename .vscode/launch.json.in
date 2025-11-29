@@ -1,0 +1,62 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Memory Example",
+            "type": "cppdbg",
+            "request": "launch",
+            {% if PLATFORM_DEFINE == "PLATFORM_IS_LINUX" -%}
+            "program": "${workspaceFolder}/engine/build/debug/examples/memory",
+            {% elif PLATFORM_DEFINE == "PLATFORM_IS_WINDOWS"-%}
+            "program": "${workspaceFolder}/engine/build/debug/examples/Debug/memory.exe",
+            {% endif -%}
+            "args": [],
+            {% if PLATFORM_DEFINE == "PLATFORM_IS_LINUX" -%}
+            "cwd": "${workspaceFolder}/engine/build/debug/examples",
+            {% elif PLATFORM_DEFINE == "PLATFORM_IS_WINDOWS"-%}
+            "cwd": "${workspaceFolder}/engine/build/debug/examples/Debug",
+            {% endif -%}
+            "stopAtEntry": false,
+            "preLaunchTask": "Build Engine"
+        },
+        {
+            "name": "Console Example",
+            "type": "cppdbg",
+            "request": "launch",
+            {% if PLATFORM_DEFINE == "PLATFORM_IS_LINUX" -%}
+            "program": "${workspaceFolder}/engine/build/debug/examples/console",
+            {% elif PLATFORM_DEFINE == "PLATFORM_IS_WINDOWS"-%}
+            "program": "${workspaceFolder}/engine/build/debug/examples/Debug/console.exe",
+            {% endif -%}
+            "args": [],
+            {% if PLATFORM_DEFINE == "PLATFORM_IS_LINUX" -%}
+            "cwd": "${workspaceFolder}/engine/build/debug/examples",
+            {% elif PLATFORM_DEFINE == "PLATFORM_IS_WINDOWS"-%}
+            "cwd": "${workspaceFolder}/engine/build/debug/examples/Debug",
+            {% endif -%}
+            "stopAtEntry": false,
+            "preLaunchTask": "Build Engine"
+        },
+        {
+            "name": "Application",
+            "type": "cppdbg",
+            "request": "launch",
+            {% if PLATFORM_DEFINE == "PLATFORM_IS_LINUX" -%}
+            "program": "${workspaceFolder}/app/build/debug/MEEDApp",
+            {% elif PLATFORM_DEFINE == "PLATFORM_IS_WINDOWS"-%}
+            "program": "${workspaceFolder}/app/build/debug/Debug/MEEDApp.exe",
+            {% endif -%}
+            "args": [],
+            {% if PLATFORM_DEFINE == "PLATFORM_IS_LINUX" -%}
+            "cwd": "${workspaceFolder}/app/build/debug",
+            {% elif PLATFORM_DEFINE == "PLATFORM_IS_WINDOWS"-%}
+            "cwd": "${workspaceFolder}/app/build/debug/Debug",
+            {% endif -%}
+            "stopAtEntry": false,
+            "preLaunchTask": "Build Application"
+        }
+    ]
+}

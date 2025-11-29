@@ -10,6 +10,8 @@ from config import (
     OpenDesigner,
     BuildCProject,
     RunTestEngine,
+    RunPythonTest,
+    RunApplication,
     CreateEnvironment,
     BuildEngineWebLib,
     RunEditorConvertUI,
@@ -17,7 +19,6 @@ from config import (
     InstallCDependencies,
     InstallPythonDependencies,
 )
-from config.utils.python_utils import RunPythonTest
 
 
 def main():
@@ -66,8 +67,11 @@ def main():
     elif args.IsRunDesigner:
         OpenDesigner(**args.Args)
     elif args.IsRun:
-        BuildCProject(project="engine", **args.Args)
-        RunEditor(**args.Args)
+        if args.IsPythonProject:
+            BuildCProject(**(args.Args | dict(project="engine")))
+            RunEditor(**args.Args)
+        else:
+            RunApplication(**args.Args)
     elif args.IsRunExample:
         RunExample(**args.Args)
     elif args.IsRunAutogen:

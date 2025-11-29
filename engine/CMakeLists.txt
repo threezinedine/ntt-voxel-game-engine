@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(MEEDEngine)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cmake)
 include(MEEDConfigure)
 
 MEEDSetup()
@@ -9,26 +9,30 @@ MEEDSetup()
 file(
     GLOB 
     SRC_FILES
-    ${CMAKE_SOURCE_DIR}/src/*.c
-    ${CMAKE_SOURCE_DIR}/src/**/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.c
 )
 
 file(
     GLOB 
     HEADER_FILES 
-    ${CMAKE_SOURCE_DIR}/include/MEEDEngine/*.h
-    ${CMAKE_SOURCE_DIR}/include/MEEDEngine/**/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/MEEDEngine/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/MEEDEngine/**/*.h
 )
 
-if (NOT WEBBUILD)
+if (NOT WEB_BUILD)
     MEEDFindPackage(MEEDpybind11 "Dependencies")
 endif()
 
 set(PROJECT_SOURCE_FILES ${SRC_FILES} ${HEADER_FILES})
-set(PROJECT_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
+set(PROJECT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(PROJECT_DEFINITIONS ${COMMON_DEFINITIONS})
-set(PROJECT_PRECOMPILED_HEADER ${CMAKE_SOURCE_DIR}/include/MEEDEngine/platforms/common.h)
+set(PROJECT_PRECOMPILED_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/include/MEEDEngine/platforms/common.h)
 set(PROJECT_LIBRARIES)
+
+if (LINUX_BUILD)
+    list(APPEND PROJECT_LIBRARIES X11)
+endif()
 
 # ================ Engine Lib ================
 
@@ -62,24 +66,24 @@ target_link_libraries(
     ${PROJECT_LIBRARIES}
 )
 
-if (WEBBUILD)
+if (WEB_BUILD)
     add_custom_command(
         TARGET ${PROJECT_NAME}
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_BINARY_DIR}/libMEEDEngine.a
+        ${CMAKE_CURRENT_BINARY_DIR}/libMEEDEngine.a
         "${PROJECT_BASE_DIR}/webruntime/libMEEDEngine.a"
     )
 endif()
 
-if (NOT WEBBUILD)
+if (NOT WEB_BUILD)
     # ================ Examples ================
-    add_subdirectory("examples") # no need to build examples for webbuild
+    add_subdirectory("examples") # no need to build examples for web_build
 endif()
 
-if (NOT WEBBUILD)
+if (NOT WEB_BUILD)
     # ================ Engine Binding Lib ================
     set(BINDING_PROJECT "${PROJECT_NAME}Binding")
-    set(BINDING_SOURCE_FILES ${CMAKE_SOURCE_DIR}/tmp/binding.cpp)
+    set(BINDING_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tmp/binding.cpp)
 
     pybind11_add_module(
         ${BINDING_PROJECT}
@@ -102,7 +106,7 @@ if (NOT WEBBUILD)
     )
 
     # ================ Copy Resources ================
-    set(LIB_FILE ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.so)
+    set(LIB_FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.so)
     set(OUTPUT_FILE ${PROJECT_BASE_DIR}/editor/Engine/${PROJECT_NAME}.so)
 
     add_custom_command(
