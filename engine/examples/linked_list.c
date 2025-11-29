@@ -2,7 +2,7 @@
 
 int main(void)
 {
-	meedPlatformMemoryInit();
+	meedPlatformMemoryInitialize();
 
 	struct MEEDLinkedList* pList = meedLinkedListCreate(MEED_NULL);
 

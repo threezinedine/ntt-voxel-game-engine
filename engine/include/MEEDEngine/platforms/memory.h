@@ -14,7 +14,7 @@ extern "C" {
  * Must call this function before using any memory-related functions.
  * This function starts the memory management system.
  */
-void meedPlatformMemoryInit();
+void meedPlatformMemoryInitialize();
 
 /**
  * Allocates a block of memory of the specified size.

@@ -68,6 +68,15 @@ target_link_libraries(
 )
 
 if (NOT WEB_BUILD)
+    MEEDFindPackage(MEEDVulkan "Dependencies")
+    target_link_libraries(
+        ${PROJECT_NAME}
+        PUBLIC
+        MEEDVulkan
+    )
+endif()
+
+if (NOT WEB_BUILD)
     # ================ Examples ================
     add_subdirectory("examples") # no need to build examples for web_build
 

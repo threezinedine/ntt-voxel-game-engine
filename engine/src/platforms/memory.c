@@ -37,8 +37,8 @@ static b8 s_isInitialized = MEED_FALSE;
 /**
  * The needed information for the linked list head and tail pointers.
  */
-static struct MemoryNode* s_pMemoryHead = NULL;
-static struct MemoryNode* s_pMemoryTail = NULL;
+static struct MemoryNode* s_pMemoryHead = MEED_NULL;
+static struct MemoryNode* s_pMemoryTail = MEED_NULL;
 
 /**
  * Be modified by the `_malloc` and `_free` functions, just be used for
@@ -62,12 +62,12 @@ static void* _malloc(meedSize size);
  */
 static void _free(void* ptr, meedSize size);
 
-void meedPlatformMemoryInit()
+void meedPlatformMemoryInitialize()
 {
 	MEED_ASSERT(s_isInitialized == MEED_FALSE);
 	MEED_ASSERT(s_totalAllocatedMemory == 0);
-	MEED_ASSERT(s_pMemoryHead == NULL);
-	MEED_ASSERT(s_pMemoryTail == NULL);
+	MEED_ASSERT(s_pMemoryHead == MEED_NULL);
+	MEED_ASSERT(s_pMemoryTail == MEED_NULL);
 
 	// Initialize code below this line if needed in the future.
 

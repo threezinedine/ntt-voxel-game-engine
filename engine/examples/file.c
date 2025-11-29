@@ -2,7 +2,7 @@
 
 int main(void)
 {
-	meedPlatformMemoryInit();
+	meedPlatformMemoryInitialize();
 
 	struct MEEDFileData* pFile = meedPlatformOpenFile("./example.txt", MEED_FILE_MODE_WRITE);
 

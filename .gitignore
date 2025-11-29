@@ -426,3 +426,4 @@ config/conf.py
 
 .vscode/launch.json
 .vscode/tasks.json
+vulkan.txt

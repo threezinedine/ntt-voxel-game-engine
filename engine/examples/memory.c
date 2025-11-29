@@ -2,7 +2,7 @@
 
 int main()
 {
-	meedPlatformMemoryInit();
+	meedPlatformMemoryInitialize();
 
 	void* ptr = meedPlatformMalloc(128);
 	MEED_ASSERT_MSG(ptr != MEED_NULL, "Memory allocation failed!");

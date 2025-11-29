@@ -2,7 +2,7 @@
 
 int main(void)
 {
-	meedPlatformMemoryInit();
+	meedPlatformMemoryInitialize();
 	meedWindowInitialize();
 
 	struct MEEDWindowData* pWindowData = meedWindowCreate(800, 600, "MEED Application Window");
