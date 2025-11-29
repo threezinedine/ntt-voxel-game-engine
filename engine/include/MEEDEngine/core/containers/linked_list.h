@@ -57,6 +57,20 @@ struct MEEDLinkedList* meedLinkedListCreate(MEEDLinkedListDeleteCallback pDelete
 void meedLinkedListPush(struct MEEDLinkedList* pList, void* pData);
 
 /**
+ * @brief Inserts data at a specific index in the linked list.
+ *
+ * This function inserts a new node containing the provided data
+ * at the specified index in the linked list. If the index is equal
+ * to the size of the list, the data is appended to the end.
+ * If the index is out of bounds, an assertion is raised.
+ *
+ * @param pList Pointer to the MEEDLinkedList. If NULL, raises an assertion.
+ * @param index The zero-based index where the data should be inserted. If out of bounds, raises an assertion.
+ * @param pData Pointer to the data to be inserted into the list.
+ */
+void meedLinkedListInsert(struct MEEDLinkedList* pList, u32 index, void* pData);
+
+/**
  * @brief Gets the number of elements in the linked list.
  *
  * This function returns the current size of the linked list,
@@ -89,6 +103,17 @@ b8 meedLinkedListEmpty(struct MEEDLinkedList* pList);
  * @return Pointer to the data at the specified index.
  */
 void* meedLinkedListAt(struct MEEDLinkedList* pList, u32 index);
+
+/**
+ * @brief Clears all elements from the linked list.
+ *
+ * This function removes all nodes from the linked list and frees
+ * their memory. If a delete callback was provided during list creation,
+ * it will be called for each node's data before freeing the node.
+ *
+ * @param pList Pointer to the MEEDLinkedList. If NULL, raises an assertion.
+ */
+void meedLinkedListClear(struct MEEDLinkedList* pList);
 
 /**
  * @brief Destroys a linked list and frees its memory.
