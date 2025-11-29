@@ -71,6 +71,20 @@ void meedLinkedListPush(struct MEEDLinkedList* pList, void* pData);
 void meedLinkedListInsert(struct MEEDLinkedList* pList, u32 index, void* pData);
 
 /**
+ * @brief Erases the node at a specific index in the linked list.
+ *
+ * This function removes the node at the specified index from the
+ * linked list and frees its memory. If a delete callback was
+ * provided during list creation, it will be called for the node's
+ * data before freeing the node. If the index is out of bounds,
+ * an assertion is raised.
+ *
+ * @param pList Pointer to the MEEDLinkedList. If NULL, raises an assertion.
+ * @param index The zero-based index of the node to be erased. If out of bounds, raises an assertion.
+ */
+void meedLinkedListErase(struct MEEDLinkedList* pList, u32 index);
+
+/**
  * @brief Gets the number of elements in the linked list.
  *
  * This function returns the current size of the linked list,
