@@ -208,9 +208,9 @@ def GenerateBindings(
     force : bool(optional)
         Force regeneration of the binding file.
     """
-    filePath = os.path.join(SYSTEM.BASE_DIR, binding.file)
-    templatePath = os.path.join(SYSTEM.BASE_DIR, binding.template)
-    outputPath = os.path.join(SYSTEM.BASE_DIR, binding.output)
+    filePath = os.path.join(SYSTEM.BaseDir, binding.file)
+    templatePath = os.path.join(SYSTEM.BaseDir, binding.template)
+    outputPath = os.path.join(SYSTEM.BaseDir, binding.output)
 
     dependenciesFiles: list[str] = []
 
@@ -262,7 +262,7 @@ def GenerateBindings(
     with open(templatePath, "r") as f:
         templateContent = f.read()
 
-    env = Environment(loader=FileSystemLoader(SYSTEM.BASE_DIR))
+    env = Environment(loader=FileSystemLoader(SYSTEM.BaseDir))
     template = env.from_string(templateContent)
 
     content = template.render(
