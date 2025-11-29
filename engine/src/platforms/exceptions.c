@@ -12,6 +12,9 @@ void meedRaiseException(enum MEEDExceptionType type, const char* message, const 
 	case MEED_EXCEPTION_TYPE_OUT_OF_INDEX:
 		meedPlatformBufferedPrint(errorBuffer, sizeof(errorBuffer), "Out of Index Exception: %s", message);
 		break;
+	case MEED_EXCEPTION_TYPE_EMPTY_CONTAINER:
+		meedPlatformBufferedPrint(errorBuffer, sizeof(errorBuffer), "Empty Container Exception: %s", message);
+		break;
 	default:
 		MEED_UNTOUCHABLE();
 	}

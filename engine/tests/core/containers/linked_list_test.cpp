@@ -1,5 +1,6 @@
 #include "common.hpp"
 
+namespace {
 static u32 s_deleteCallCount = 0;
 
 struct TestNode
@@ -14,6 +15,7 @@ void deleteTestNode(void* pData)
 	pData = MEED_NULL;
 	s_deleteCallCount++;
 }
+} // anonymous namespace
 
 class LinkedListTest : public Test
 {

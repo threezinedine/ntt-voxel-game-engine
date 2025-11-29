@@ -41,7 +41,11 @@ void* meedStackTop(struct MEEDStack* pStack)
 void meedStackPop(struct MEEDStack* pStack)
 {
 	MEED_ASSERT(pStack != MEED_NULL);
-	MEED_ASSERT(meedStackEmpty(pStack) == MEED_FALSE);
+
+	if (meedStackEmpty(pStack) == MEED_TRUE)
+	{
+		MEED_THROW(MEED_EXCEPTION_TYPE_EMPTY_CONTAINER, "Attempted to pop from an empty stack.");
+	}
 
 	u32 count = meedStackGetCount(pStack);
 	meedLinkedListErase(pStack->pList, count - 1);
