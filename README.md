@@ -10,8 +10,18 @@
 
 ### Linux
 
-1. Clang-format:
+1.Clang-format:
 
 ```bash
 sudo apt install clang-format
+```
+
+2.Install Vukan validationi layers:
+
+```bash
+sudo apt install vulkan-tools
+wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-noble.list https://packages.lunarg.com/vulkan/lunarg-vulkan-noble.list
+sudo apt update
+sudo apt install vulkan-sdk
 ```

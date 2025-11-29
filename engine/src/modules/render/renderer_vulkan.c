@@ -13,7 +13,7 @@ static const char* instanceExtensions[] = {
 };
 
 static const char* layers[] = {
-	// "VK_LAYER_KHRONOS_validation",
+	"VK_LAYER_KHRONOS_validation",
 };
 
 /// @brief The context of the Vulkan renderer.
