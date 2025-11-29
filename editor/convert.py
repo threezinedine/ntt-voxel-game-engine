@@ -102,7 +102,7 @@ def main():
 
             UpdateFileCache(uiFilePath)
 
-    if not isAnyUIFileChanged:
+    if isAnyUIFileChanged:
         with open(os.path.join(PYUI_DIR, "__init__.py"), "w") as initFile:
             initFile.write(initFileContent)
 

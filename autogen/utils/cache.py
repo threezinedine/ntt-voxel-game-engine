@@ -13,7 +13,7 @@ def GetStampFilePath(filePath: str) -> str:
         str: The path to the corresponding stamp file.
     """
 
-    return os.path.join(SYSTEM.BASE_DIR, "autogen", "temp", f"{filePath}.stamp")
+    return os.path.join(SYSTEM.BaseDir, "autogen", "temp", f"{filePath}.stamp")
 
 
 def IsFileModified(filePath: str) -> bool:
@@ -26,7 +26,7 @@ def IsFileModified(filePath: str) -> bool:
         bool: True if the file has been modified, False otherwise.
     """
 
-    fullFilePath = os.path.join(SYSTEM.BASE_DIR, filePath)
+    fullFilePath = os.path.join(SYSTEM.BaseDir, filePath)
     stampFilePath = GetStampFilePath(filePath)
 
     if not os.path.exists(fullFilePath):
@@ -61,5 +61,5 @@ def ClearCache() -> None:
     Clear all cached stamp files.
     """
 
-    tempDir = os.path.join(SYSTEM.BASE_DIR, "autogen", "temp")
+    tempDir = os.path.join(SYSTEM.BaseDir, "autogen", "temp")
     shutil.rmtree(tempDir, ignore_errors=True)

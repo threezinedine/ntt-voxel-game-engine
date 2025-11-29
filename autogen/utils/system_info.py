@@ -1,70 +1,23 @@
 import os
-import sysconfig
+import sys
 
+ROOT_DIR = os.path.normpath(
+    os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "..",
+    )
+)
 
-class SystemInfo:
-    def __init__(self) -> None:
-        self._compilerPath = ""
-        self._intelliSenseMode = ""
+print(ROOT_DIR)
 
-        if self.IsWindowsPlatform:
-            self._compilerPath = "C:/Program Files/LLVM/bin/clang.exe"
-            self._intelliSenseMode = "windows-clang-x64"
+sys.path.insert(0, ROOT_DIR)
 
-        elif self.IsLinuxPlatform:
-            self._compilerPath = "/usr/bin/clang"
-            self._intelliSenseMode = "linux-clang-x64"
-
-        self._pythonIncludeDir = sysconfig.get_path("include")
-
-    @property
-    def BASE_DIR(self) -> str:
-        return os.path.dirname(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        )
-
-    @property
-    def IsWindowsPlatform(self) -> bool:
-        return os.name == "nt"
-
-    @property
-    def IsLinuxPlatform(self) -> bool:
-        return os.name == "posix"
-
-    @property
-    def CCompiler(self) -> str:
-        return self._compilerPath
-
-    @property
-    def IntelliSenseMode(self) -> str:
-        return self._intelliSenseMode
-
-    @property
-    def PythonInterpreter(self) -> str:
-        if self.IsWindowsPlatform:
-            return "venv/Scripts/python.exe"
-        elif self.IsLinuxPlatform:
-            return "venv/bin/python3"
-        else:
-            raise NotImplementedError("Unsupported platform")
-
-    @property
-    def PythonIncludeDir(self) -> str:
-        return self._pythonIncludeDir
-
-    def GetAllEditorResources(self) -> list[str]:
-        iconDir = os.path.join(self.BASE_DIR, "editor", "assets", "icons")
-        imagesDir = os.path.join(self.BASE_DIR, "editor", "assets", "images")
-        resources = [os.path.join("assets/icons", file) for file in os.listdir(iconDir)]
-        resources += [
-            os.path.join("assets/images", file) for file in os.listdir(imagesDir)
-        ]
-        return resources
+from config import SystemInfo
 
 
 SYSTEM = SystemInfo()
 TEMPLATE_DATA = dict(
-    BASE_DIR=SYSTEM.BASE_DIR,
+    BASE_DIR=SYSTEM.BaseDir,
     PLATFORM_DEFINE=(
         "PLATFORM_IS_WINDOWS" if SYSTEM.IsWindowsPlatform else "PLATFORM_IS_LINUX"
     ),

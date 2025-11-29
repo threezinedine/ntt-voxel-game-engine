@@ -419,6 +419,6 @@ vite.config.ts.timestamp-*
 externals/
 
 *-dist/
-game-engine.code-workspace
+meed.code-workspace
 
 bin/

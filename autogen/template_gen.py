@@ -20,7 +20,7 @@ def GenerateTemplate(template: Template) -> tuple[str, list[str]]:
     template : Template
         The template configuration.
     """
-    templatePath = os.path.join(SYSTEM.BASE_DIR, template.file)
+    templatePath = os.path.join(SYSTEM.BaseDir, template.file)
 
     allDependencies = []
 
@@ -47,7 +47,7 @@ def GenerateTemplate(template: Template) -> tuple[str, list[str]]:
     if template.output is not None:
         outputFile = template.output
 
-    fullOutputPath = os.path.join(SYSTEM.BASE_DIR, outputFile)
+    fullOutputPath = os.path.join(SYSTEM.BaseDir, outputFile)
 
     isAnyDependencyModified = False
     for depFile in allDependencies:

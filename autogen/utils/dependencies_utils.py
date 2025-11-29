@@ -62,7 +62,7 @@ def _LoadFilesRecursively(
             fullPath = os.path.join(root, file)
 
             if _IsFileValid(fullPath, extensions):
-                relPath = os.path.relpath(fullPath, SYSTEM.BASE_DIR)
+                relPath = os.path.relpath(fullPath, SYSTEM.BaseDir)
                 finalFiles.add(relPath)
 
         for _folder in _folders:
@@ -97,7 +97,7 @@ def AllDependenciesFiles(
         allFiles.update(
             _LoadFilesRecursively(
                 allFiles,
-                os.path.join(SYSTEM.BASE_DIR, dep),
+                os.path.join(SYSTEM.BaseDir, dep),
                 extensions,
             )
         )

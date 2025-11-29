@@ -1,6 +1,6 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QMainWindow, QWidget
-from PyQt6.QtGui import QIcon, QPixmap
+from typing import Any
+from PySide6.QtWidgets import QMainWindow
+from pyui import Ui_MainWindow
 
 
 class EditorMainWindow(QMainWindow):
@@ -10,10 +10,9 @@ class EditorMainWindow(QMainWindow):
 
     def __init__(
         self,
-        parent: QWidget | None = None,
-        flags: Qt.WindowType = Qt.WindowType.Widget,
+        **kwargs: Any,
     ) -> None:
-        super().__init__(parent, flags)
+        super().__init__(**kwargs)
 
-        self.setWindowTitle("MCU Emulator Environment Development")
-        self.setWindowIcon(QIcon(QPixmap(":/assets/images/meed-logo.png")))
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)  # type: ignore
