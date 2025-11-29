@@ -32,7 +32,7 @@ set(PROJECT_PRECOMPILED_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/include/MEEDEngine/pl
 set(PROJECT_LIBRARIES)
 
 if (LINUX_BUILD)
-    list(APPEND PROJECT_LIBRARIES X11)
+    list(APPEND PROJECT_LIBRARIES X11 -rdynamic)
 endif()
 
 # ================ Engine Lib ================
