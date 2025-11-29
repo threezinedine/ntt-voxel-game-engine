@@ -8,24 +8,17 @@
  */
 
 /**
- * @struct MEEDLinkedListNode
- * @brief A node in a linked list.
- *
- * This structure represents a single node in a linked list, containing
- * a pointer to the data and a pointer to the next node in the list.
- */
-struct MEEDLinkedListNode
-{
-	void* pData; ///< Pointer to the data stored in the node.
-
-	struct MEEDLinkedListNode* pNext; ///< Pointer to the next node in the linked list.
-};
-
-/**
  * The callback type which is called when deleting each node's data during linked list destruction.
  */
 typedef void (*MEEDLinkedListDeleteCallback)(void* pData);
 
+struct MEEDLinkedList; ///< Opaque structure representing a linked list.
+
+struct MEEDLinkedListNode; ///< Opaque structure representing a linked list node.
+
+/**
+ * All needed information for working with the linked list.
+ */
 struct MEEDLinkedList
 {
 	u32							 size;			  ///< The number of nodes in the linked list.
