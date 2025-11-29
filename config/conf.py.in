@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 _VARIABLES: Dict[str, Any] = dict(
     # EMCC="/absolute/path/to/emcc",
-    EMCMAKE="/home/threezinedine/Projects/emsdk/upstream/emscripten/emcmake",
+    # EMCMAKE="/absolute/path/to/emcmake",
 )
 
 
