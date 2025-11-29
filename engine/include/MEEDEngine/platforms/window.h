@@ -1,6 +1,10 @@
 #pragma once
 #include "common.h"
 
+#if __cplusplus
+extern "C" {
+#endif
+
 /**
  * @file window.h
  * The utilities for managing the windowing system inside the `MEEDEngine`.
@@ -87,3 +91,7 @@ void meedWindowDestroy(struct MEEDWindowData* pWindowData);
  * Shutdown the windowing system. Must be called after all window-related functions are done.
  */
 void meedWindowShutdown();
+
+#if __cplusplus
+}
+#endif

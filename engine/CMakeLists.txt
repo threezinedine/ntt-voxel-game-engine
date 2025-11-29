@@ -67,21 +67,13 @@ target_link_libraries(
     ${PROJECT_LIBRARIES}
 )
 
-if (WEB_BUILD)
-    add_custom_command(
-        TARGET ${PROJECT_NAME}
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_BINARY_DIR}/libMEEDEngine.a
-        "${PROJECT_BASE_DIR}/webruntime/libMEEDEngine.a"
-    )
-endif()
-
 if (NOT WEB_BUILD)
     # ================ Examples ================
     add_subdirectory("examples") # no need to build examples for web_build
-endif()
 
-if (NOT WEB_BUILD)
+    # ================ Tests ================
+    add_subdirectory("tests")
+
     # ================ Engine Binding Lib ================
     set(BINDING_PROJECT "${PROJECT_NAME}Binding")
     set(BINDING_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tmp/binding.cpp)
@@ -118,4 +110,5 @@ if (NOT WEB_BUILD)
         DEPENDS ${LIB_FILE}
         COMMENT "Copying MEED Engine binding to Editor directory"
     )
+
 endif()

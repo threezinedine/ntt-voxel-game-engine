@@ -1,6 +1,10 @@
 #pragma once
 #include "common.h"
 
+#if __cplusplus
+extern "C" {
+#endif
+
 /**
  * All possible color which the console can display, using
  * `meedPlatformSetColor` for modifying the color.
@@ -53,3 +57,7 @@ void meedPlatformFPrint(const char* format, ...);
  * @param str The string to print.
  */
 void meedPlatformPrint(const char* str) MEED_BINDING;
+
+#if __cplusplus
+}
+#endif

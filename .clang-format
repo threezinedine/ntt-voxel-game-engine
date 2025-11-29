@@ -22,6 +22,8 @@ AlignConsecutiveMacros:
     AcrossComments: true
 
 AlignOperands: true
+IndentAccessModifiers: false
+AccessModifierOffset: -4
 
 BreakBeforeBraces: Custom
 BraceWrapping:

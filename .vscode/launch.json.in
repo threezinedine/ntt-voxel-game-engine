@@ -59,6 +59,24 @@
             "preLaunchTask": "Build Engine"
         },
         {
+            "name": "Engine Test",
+            "type": "cppdbg",
+            "request": "launch",
+            {% if PLATFORM_DEFINE == "PLATFORM_IS_LINUX" -%}
+            "program": "${workspaceFolder}/engine/build/debug/tests/MEEDEngineTests",
+            {% elif PLATFORM_DEFINE == "PLATFORM_IS_WINDOWS"-%}
+            "program": "${workspaceFolder}/engine/build/debug/tests/Debug/MEEDEngineTests.exe",
+            {% endif -%}
+            "args": [],
+            {% if PLATFORM_DEFINE == "PLATFORM_IS_LINUX" -%}
+            "cwd": "${workspaceFolder}/engine/build/debug/tests",
+            {% elif PLATFORM_DEFINE == "PLATFORM_IS_WINDOWS"-%}
+            "cwd": "${workspaceFolder}/engine/build/debug/tests/Debug",
+            {% endif -%}
+            "stopAtEntry": false,
+            "preLaunchTask": "Build Engine"
+        },
+        {
             "name": "Application",
             "type": "cppdbg",
             "request": "launch",

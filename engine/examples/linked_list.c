@@ -4,7 +4,7 @@ int main(void)
 {
 	meedPlatformMemoryInit();
 
-	struct MEEDLinkedList* pList = meedLinkedListCreate();
+	struct MEEDLinkedList* pList = meedLinkedListCreate(MEED_NULL);
 
 	meedLinkedListPush(pList, (void*)1);
 

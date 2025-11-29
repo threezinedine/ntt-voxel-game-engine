@@ -77,9 +77,33 @@ def BuildCProject(
 
 
 def RunTestEngine(
+    filter: str = "",
     **kwargs: Any,
 ) -> None:
-    pass
+    """
+    Runs the test suite for the engine project.
+
+    Arguments:
+        filter (str): Optional filter to run specific tests by name.
+    """
+
+    logger.info("Running engine tests...")
+
+    if SYSTEM.IsWindowsPlatform:
+        engineTestDir = os.path.join(
+            SYSTEM.BaseDir, "engine", "build", "debug", "tests", "Debug"
+        )
+        testCommand = "MEEDEngineTests.exe"
+    else:
+        engineTestDir = os.path.join(
+            SYSTEM.BaseDir, "engine", "build", "debug", "tests"
+        )
+        testCommand = "./MEEDEngineTests"
+
+    if filter:
+        testCommand += f' --gtest_filter="{filter}"'
+
+    RunCommand(testCommand, cwd=engineTestDir)
 
 
 def RunExample(

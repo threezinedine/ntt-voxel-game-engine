@@ -177,12 +177,18 @@ void meedPlatformMemoryShutdown()
 		snprintf(cmd, sizeof(cmd), "addr2line -e /proc/%d/exe -pif", s_pMemoryHead->threadId);
 		for (meedSize i = 0; i < s_pMemoryHead->framesCount; i++)
 		{
+#if 0
 			char syscom[1024];
 			snprintf(syscom, sizeof(syscom), "%s %p", cmd, s_pMemoryHead->frames[i]);
 			char** function = backtrace_symbols(&s_pMemoryHead->frames[i], 1);
 			meedPlatformPrint(function[0]);
 			meedPlatformPrint("\n");
 			system(syscom);
+#else
+			char** function = backtrace_symbols(&s_pMemoryHead->frames[i], 1);
+			meedPlatformPrint(function[0]);
+			meedPlatformPrint("\n");
+#endif
 		}
 		exit(139); // 139 is the exit code for segmentation fault.
 		config.color = MEED_CONSOLE_COLOR_RESET;

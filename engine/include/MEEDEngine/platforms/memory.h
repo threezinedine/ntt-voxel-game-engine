@@ -1,6 +1,10 @@
 #pragma once
 #include "common.h"
 
+#if __cplusplus
+extern "C" {
+#endif
+
 /**
  * @file memory.h
  * The utilities for managing the memory operations inside the `MEEDEngine`.
@@ -81,3 +85,7 @@ void meedPlatformMemoryShutdown();
  * @param ptr A pointer to the memory block to free.
  */
 #define MEED_FREE_ARRAY(ptr, type, count) meedPlatformFree((void*)(ptr), sizeof(type) * (count))
+
+#if __cplusplus
+}
+#endif

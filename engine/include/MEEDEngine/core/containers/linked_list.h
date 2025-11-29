@@ -21,11 +21,17 @@ struct MEEDLinkedListNode
 	struct MEEDLinkedListNode* pNext; ///< Pointer to the next node in the linked list.
 };
 
+/**
+ * The callback type which is called when deleting each node's data during linked list destruction.
+ */
+typedef void (*MEEDLinkedListDeleteCallback)(void* pData);
+
 struct MEEDLinkedList
 {
-	meedSize				   size;  ///< The number of nodes in the linked list.
-	struct MEEDLinkedListNode* pHead; ///< Pointer to the head node of the linked list.
-	struct MEEDLinkedListNode* pTail; ///< Pointer to the tail node of the linked list.
+	u32							 size;			  ///< The number of nodes in the linked list.
+	struct MEEDLinkedListNode*	 pHead;			  ///< Pointer to the head node of the linked list.
+	struct MEEDLinkedListNode*	 pTail;			  ///< Pointer to the tail node of the linked list.
+	MEEDLinkedListDeleteCallback pDeleteCallback; ///< Callback function to delete node data.
 };
 
 /**
@@ -35,9 +41,12 @@ struct MEEDLinkedList
  * initializes its members, and returns a pointer to the newly created
  * linked list.
  *
+ * @param pDeleteCallback Optional callback function to delete node data when the list is destroyed. Can be NULL.
+ * If NULL, node data will not be deleted automatically.
+ *
  * @return Pointer to the newly created MEEDLinkedList.
  */
-struct MEEDLinkedList* meedLinkedListCreate();
+struct MEEDLinkedList* meedLinkedListCreate(MEEDLinkedListDeleteCallback pDeleteCallback);
 
 /**
  * Append the data to the end of the linked list.
@@ -46,6 +55,40 @@ struct MEEDLinkedList* meedLinkedListCreate();
  * @param pData Pointer to the data to be added to the list.
  */
 void meedLinkedListPush(struct MEEDLinkedList* pList, void* pData);
+
+/**
+ * @brief Gets the number of elements in the linked list.
+ *
+ * This function returns the current size of the linked list,
+ * which represents the number of nodes it contains.
+ *
+ * @param pList Pointer to the MEEDLinkedList. If NULL, raises an assertion.
+ * @return The number of elements in the linked list.
+ */
+u32 meedLinkedListGetCount(struct MEEDLinkedList* pList);
+
+/**
+ * @brief Checks if the linked list is empty.
+ *
+ * This function checks whether the linked list contains any elements.
+ *
+ * @param pList Pointer to the MEEDLinkedList. If NULL, raises an assertion.
+ * @return MEED_TRUE if the list is empty, MEED_FALSE otherwise.
+ */
+b8 meedLinkedListEmpty(struct MEEDLinkedList* pList);
+
+/**
+ * @brief Retrieves the data at a specific index in the linked list.
+ *
+ * This function traverses the linked list to find the node at the
+ * specified index and returns a pointer to its data. If the index
+ * is out of bounds, an assertion is raised.
+ *
+ * @param pList Pointer to the MEEDLinkedList. If NULL, raises an assertion.
+ * @param index The zero-based index of the element to retrieve. If out of bounds, raises an assertion.
+ * @return Pointer to the data at the specified index.
+ */
+void* meedLinkedListAt(struct MEEDLinkedList* pList, u32 index);
 
 /**
  * @brief Destroys a linked list and frees its memory.

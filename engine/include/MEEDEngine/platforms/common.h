@@ -126,4 +126,5 @@ typedef MEED_BINDING size_t meedSize;
 #define MEED_ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 #include "console.h"
+#include "exceptions.h"
 #include "memory.h"

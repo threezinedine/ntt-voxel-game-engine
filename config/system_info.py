@@ -19,8 +19,8 @@ class SystemInfo:
             self._compilerPath = "C:/Program Files/LLVM/bin/clang.exe"
             self._intelliSenseMode = "windows-clang-x64"
         elif self.IsLinuxPlatform:
-            self._compilerPath = "/usr/bin/clang"
-            self._intelliSenseMode = "linux-clang-x64"
+            self._compilerPath = "/usr/bin/g++"
+            self._intelliSenseMode = "linux-g++-x64"
 
         self._pythonIncludeDir = sysconfig.get_path("include")
 
