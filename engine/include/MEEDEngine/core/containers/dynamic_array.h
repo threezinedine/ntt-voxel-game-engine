@@ -51,6 +51,17 @@ struct MEEDDynamicArray* meedDynamicArrayCreate(u32 initialCapacity, MEEDNodeDat
 void meedDynamicArrayPush(struct MEEDDynamicArray* pArray, void* pData);
 
 /**
+ * @brief Retrieves the current number of elements in the dynamic array.
+ *
+ * This function returns the number of elements currently stored
+ * in the dynamic array.
+ *
+ * @param pArray Pointer to the MEEDDynamicArray. If NULL, raises an assertion.
+ * @return The number of elements in the dynamic array.
+ */
+u32 meedDynamicArrayCount(struct MEEDDynamicArray* pArray);
+
+/**
  * @brief Retrieves the data at a specific index in the dynamic array.
  *
  * This function returns a pointer to the data stored at the specified

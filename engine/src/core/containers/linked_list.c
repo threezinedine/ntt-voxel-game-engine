@@ -1,19 +1,5 @@
 #include "MEEDEngine/core/containers/linked_list.h"
 
-/**
- * @struct MEEDLinkedListNode
- * @brief A node in a linked list.
- *
- * This structure represents a single node in a linked list, containing
- * a pointer to the data and a pointer to the next node in the list.
- */
-struct MEEDLinkedListNode
-{
-	void* pData; ///< Pointer to the data stored in the node.
-
-	struct MEEDLinkedListNode* pNext; ///< Pointer to the next node in the linked list.
-};
-
 struct MEEDLinkedList* meedLinkedListCreate(MEEDNodeDataDeleteCallback pDeleteCallback)
 {
 	struct MEEDLinkedList* pList = MEED_MALLOC(struct MEEDLinkedList);
@@ -152,7 +138,7 @@ void meedLinkedListErase(struct MEEDLinkedList* pList, u32 index)
 	pList->size--;
 }
 
-u32 meedLinkedListGetCount(struct MEEDLinkedList* pList)
+u32 meedLinkedListCount(struct MEEDLinkedList* pList)
 {
 	MEED_ASSERT(pList != MEED_NULL);
 	return (u32)(pList->size);

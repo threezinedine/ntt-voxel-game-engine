@@ -32,6 +32,12 @@ void meedDynamicArrayPush(struct MEEDDynamicArray* pArray, void* pData)
 	pArray->count++;
 }
 
+u32 meedDynamicArrayCount(struct MEEDDynamicArray* pArray)
+{
+	MEED_ASSERT(pArray != MEED_NULL);
+	return pArray->count;
+}
+
 void* meedDynamicArrayAt(struct MEEDDynamicArray* pArray, u32 index)
 {
 	MEED_ASSERT(pArray != MEED_NULL);

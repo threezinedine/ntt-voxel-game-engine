@@ -20,7 +20,7 @@ b8 meedStackEmpty(struct MEEDStack* pStack)
 u32 meedStackGetCount(struct MEEDStack* pStack)
 {
 	MEED_ASSERT(pStack != MEED_NULL);
-	return meedLinkedListGetCount(pStack->pList);
+	return meedLinkedListCount(pStack->pList);
 }
 
 void meedStackPush(struct MEEDStack* pStack, void* pData)

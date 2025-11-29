@@ -13,7 +13,19 @@ extern "C" {
  * Self implemented general linked list container.
  */
 
-struct MEEDLinkedListNode; ///< Opaque structure representing a linked list node.
+/**
+ * @struct MEEDLinkedListNode
+ * @brief A node in a linked list.
+ *
+ * This structure represents a single node in a linked list, containing
+ * a pointer to the data and a pointer to the next node in the list.
+ */
+struct MEEDLinkedListNode
+{
+	void* pData; ///< Pointer to the data stored in the node.
+
+	struct MEEDLinkedListNode* pNext; ///< Pointer to the next node in the linked list.
+};
 
 /**
  * All needed information for working with the linked list.
@@ -85,7 +97,7 @@ void meedLinkedListErase(struct MEEDLinkedList* pList, u32 index);
  * @param pList Pointer to the MEEDLinkedList. If NULL, raises an assertion.
  * @return The number of elements in the linked list.
  */
-u32 meedLinkedListGetCount(struct MEEDLinkedList* pList);
+u32 meedLinkedListCount(struct MEEDLinkedList* pList);
 
 /**
  * @brief Checks if the linked list is empty.

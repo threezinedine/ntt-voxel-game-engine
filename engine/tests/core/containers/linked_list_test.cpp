@@ -28,7 +28,7 @@ TEST_F(LinkedListTest, PushBackAndSize)
 	meedLinkedListPush(s_pList, &b);
 	meedLinkedListPush(s_pList, &c);
 
-	EXPECT_EQ(meedLinkedListGetCount(s_pList), 3u);
+	EXPECT_EQ(meedLinkedListCount(s_pList), 3u);
 }
 
 TEST_F(LinkedListTest, GetElement)
@@ -61,7 +61,7 @@ TEST_F(LinkedListTest, InsertWithIndex0)
 	meedLinkedListInsert(s_pList, 0, &a); // List: [10]
 	meedLinkedListInsert(s_pList, 0, &c); // List: [30, 10]
 
-	EXPECT_EQ(meedLinkedListGetCount(s_pList), 2u);
+	EXPECT_EQ(meedLinkedListCount(s_pList), 2u);
 	EXPECT_EQ(*(int*)(meedLinkedListAt(s_pList, 0)), 30);
 	EXPECT_EQ(*(int*)(meedLinkedListAt(s_pList, 1)), 10);
 }
@@ -72,7 +72,7 @@ TEST_F(LinkedListTest, InsertWithMiddleIndex)
 	meedLinkedListPush(s_pList, &c);	  // List: [10, 30]
 	meedLinkedListInsert(s_pList, 1, &b); // List: [10, 20, 30]
 
-	EXPECT_EQ(meedLinkedListGetCount(s_pList), 3u);
+	EXPECT_EQ(meedLinkedListCount(s_pList), 3u);
 	EXPECT_EQ(*(int*)(meedLinkedListAt(s_pList, 0)), 10);
 	EXPECT_EQ(*(int*)(meedLinkedListAt(s_pList, 1)), 20);
 	EXPECT_EQ(*(int*)(meedLinkedListAt(s_pList, 2)), 30);
@@ -84,7 +84,7 @@ TEST_F(LinkedListTest, InsertWithEndIndex)
 	meedLinkedListPush(s_pList, &b);	  // List: [10, 20]
 	meedLinkedListInsert(s_pList, 2, &c); // List: [10, 20, 30]
 
-	EXPECT_EQ(meedLinkedListGetCount(s_pList), 3u);
+	EXPECT_EQ(meedLinkedListCount(s_pList), 3u);
 	EXPECT_EQ(*(int*)(meedLinkedListAt(s_pList, 0)), 10);
 	EXPECT_EQ(*(int*)(meedLinkedListAt(s_pList, 1)), 20);
 	EXPECT_EQ(*(int*)(meedLinkedListAt(s_pList, 2)), 30);
@@ -111,7 +111,7 @@ TEST_F(LinkedListTest, EraseByIndex0)
 
 	meedLinkedListErase(s_pList, 0); // List: [20, 30]
 
-	EXPECT_EQ(meedLinkedListGetCount(s_pList), 2u);
+	EXPECT_EQ(meedLinkedListCount(s_pList), 2u);
 	EXPECT_EQ(*(int*)(meedLinkedListAt(s_pList, 0)), 20);
 	EXPECT_EQ(*(int*)(meedLinkedListAt(s_pList, 1)), 30);
 }
@@ -124,7 +124,7 @@ TEST_F(LinkedListTest, EraseByMiddleIndex)
 
 	meedLinkedListErase(s_pList, 1); // List: [10, 30]
 
-	EXPECT_EQ(meedLinkedListGetCount(s_pList), 2u);
+	EXPECT_EQ(meedLinkedListCount(s_pList), 2u);
 	EXPECT_EQ(*(int*)(meedLinkedListAt(s_pList, 0)), 10);
 	EXPECT_EQ(*(int*)(meedLinkedListAt(s_pList, 1)), 30);
 }
@@ -137,7 +137,7 @@ TEST_F(LinkedListTest, EraseByEndIndex)
 
 	meedLinkedListErase(s_pList, 2); // List: [10, 20]
 
-	EXPECT_EQ(meedLinkedListGetCount(s_pList), 2u);
+	EXPECT_EQ(meedLinkedListCount(s_pList), 2u);
 	EXPECT_EQ(*(int*)(meedLinkedListAt(s_pList, 0)), 10);
 	EXPECT_EQ(*(int*)(meedLinkedListAt(s_pList, 1)), 20);
 }
@@ -168,13 +168,13 @@ TEST_F(LinkedListTest, EraseWithCallback)
 	meedLinkedListPush(pListWithCallback, pNode1);
 	meedLinkedListPush(pListWithCallback, pNode2);
 
-	EXPECT_EQ(meedLinkedListGetCount(pListWithCallback), 2u);
+	EXPECT_EQ(meedLinkedListCount(pListWithCallback), 2u);
 
 	EXPECT_EQ(s_deleteCallCount, 0);
 	meedLinkedListErase(pListWithCallback, 0);
 	EXPECT_EQ(s_deleteCallCount, 1);
 
-	EXPECT_EQ(meedLinkedListGetCount(pListWithCallback), 1u);
+	EXPECT_EQ(meedLinkedListCount(pListWithCallback), 1u);
 	EXPECT_EQ(((TestNode*)meedLinkedListAt(pListWithCallback, 0))->value, 200);
 
 	meedLinkedListDestroy(pListWithCallback);
@@ -182,7 +182,7 @@ TEST_F(LinkedListTest, EraseWithCallback)
 
 TEST_F(LinkedListTest, EmptyListSize)
 {
-	EXPECT_EQ(meedLinkedListGetCount(s_pList), 0u);
+	EXPECT_EQ(meedLinkedListCount(s_pList), 0u);
 	EXPECT_EQ(meedLinkedListEmpty(s_pList), MEED_TRUE);
 }
 
@@ -199,7 +199,7 @@ TEST_F(LinkedListTest, ListWithDeleteCallback)
 	meedLinkedListPush(pListWithCallback, pNode1);
 	meedLinkedListPush(pListWithCallback, pNode2);
 
-	EXPECT_EQ(meedLinkedListGetCount(pListWithCallback), 2u);
+	EXPECT_EQ(meedLinkedListCount(pListWithCallback), 2u);
 	EXPECT_EQ(((TestNode*)meedLinkedListAt(pListWithCallback, 0))->value, 100);
 	EXPECT_EQ(((TestNode*)meedLinkedListAt(pListWithCallback, 1))->value, 200);
 
@@ -219,11 +219,11 @@ TEST_F(LinkedListTest, ClearWithDeleteCallback)
 	meedLinkedListPush(pListWithCallback, pNode1);
 	meedLinkedListPush(pListWithCallback, pNode2);
 
-	EXPECT_EQ(meedLinkedListGetCount(pListWithCallback), 2u);
+	EXPECT_EQ(meedLinkedListCount(pListWithCallback), 2u);
 
 	meedLinkedListClear(pListWithCallback);
 
-	EXPECT_EQ(meedLinkedListGetCount(pListWithCallback), 0u);
+	EXPECT_EQ(meedLinkedListCount(pListWithCallback), 0u);
 
 	meedLinkedListDestroy(pListWithCallback);
 }
@@ -234,9 +234,9 @@ TEST_F(LinkedListTest, Clear)
 	meedLinkedListPush(s_pList, &b);
 	meedLinkedListPush(s_pList, &c);
 
-	EXPECT_EQ(meedLinkedListGetCount(s_pList), 3u);
+	EXPECT_EQ(meedLinkedListCount(s_pList), 3u);
 
 	meedLinkedListClear(s_pList);
 
-	EXPECT_EQ(meedLinkedListGetCount(s_pList), 0u);
+	EXPECT_EQ(meedLinkedListCount(s_pList), 0u);
 }
