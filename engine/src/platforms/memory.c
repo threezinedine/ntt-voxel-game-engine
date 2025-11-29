@@ -160,6 +160,20 @@ void* meedPlatformMemorySet(void* pDest, u8 value, meedSize size)
 	return memset(pDest, value, size);
 }
 
+u32 meedPlatformGetStringLength(const char* str)
+{
+	MEED_ASSERT(s_isInitialized == MEED_TRUE);
+	MEED_ASSERT(str != MEED_NULL);
+
+	u32 length = 0;
+	while (str[length] != '\0')
+	{
+		length++;
+	}
+
+	return length;
+}
+
 void meedPlatformMemoryShutdown()
 {
 	MEED_ASSERT(s_isInitialized == MEED_TRUE);

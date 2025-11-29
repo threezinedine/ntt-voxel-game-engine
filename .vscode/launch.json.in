@@ -59,6 +59,24 @@
             "preLaunchTask": "Build Engine"
         },
         {
+            "name": "File Example",
+            "type": "cppdbg",
+            "request": "launch",
+            {% if PLATFORM_DEFINE == "PLATFORM_IS_LINUX" -%}
+            "program": "${workspaceFolder}/engine/build/debug/examples/file",
+            {% elif PLATFORM_DEFINE == "PLATFORM_IS_WINDOWS"-%}
+            "program": "${workspaceFolder}/engine/build/debug/examples/Debug/file.exe",
+            {% endif -%}
+            "args": [],
+            {% if PLATFORM_DEFINE == "PLATFORM_IS_LINUX" -%}
+            "cwd": "${workspaceFolder}/engine/build/debug/examples",
+            {% elif PLATFORM_DEFINE == "PLATFORM_IS_WINDOWS"-%}
+            "cwd": "${workspaceFolder}/engine/build/debug/examples/Debug",
+            {% endif -%}
+            "stopAtEntry": false,
+            "preLaunchTask": "Build Engine"
+        },
+        {
             "name": "Engine Test",
             "type": "cppdbg",
             "request": "launch",

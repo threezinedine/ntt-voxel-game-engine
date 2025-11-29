@@ -53,6 +53,13 @@ void* meedPlatformMemoryCopy(void* pDest, const void* pSrc, meedSize size);
 void* meedPlatformMemorySet(void* pDest, u8 value, meedSize size);
 
 /**
+ * Gets the length of a null-terminated string.
+ * @param str The null-terminated string.
+ * @return The length of the string, excluding the null terminator.
+ */
+u32 meedPlatformGetStringLength(const char* str);
+
+/**
  * Cleans up the memory management system.
  * This function should be called when memory operations are no longer needed.
  * In `DEBUG` mode, it may also check for memory leaks.

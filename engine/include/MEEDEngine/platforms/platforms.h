@@ -1,4 +1,5 @@
 #include "common.h"
 #include "console.h"
+#include "file.h"
 #include "memory.h"
 #include "window.h"

@@ -65,8 +65,10 @@
  */
 #if defined(__clang__)
 #define MEED_BINDING __attribute__((annotate("binding")))
+#define MEED_HIDDEN	 __attribute__((annotate("hidden")))
 #else
 #define MEED_BINDING
+#define MEED_HIDDEN
 #endif
 
 #if defined(__EMSCRIPTEN__)
