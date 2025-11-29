@@ -14,7 +14,7 @@ struct MEEDLinkedListNode
 	struct MEEDLinkedListNode* pNext; ///< Pointer to the next node in the linked list.
 };
 
-struct MEEDLinkedList* meedLinkedListCreate(MEEDLinkedListDeleteCallback callback)
+struct MEEDLinkedList* meedLinkedListCreate(MEEDNodeDataDeleteCallback pDeleteCallback)
 {
 	struct MEEDLinkedList* pList = MEED_MALLOC(struct MEEDLinkedList);
 	MEED_ASSERT(pList != MEED_NULL);
@@ -22,7 +22,7 @@ struct MEEDLinkedList* meedLinkedListCreate(MEEDLinkedListDeleteCallback callbac
 	pList->size			   = 0;
 	pList->pHead		   = MEED_NULL;
 	pList->pTail		   = MEED_NULL;
-	pList->pDeleteCallback = callback;
+	pList->pDeleteCallback = pDeleteCallback;
 
 	return pList;
 }

@@ -6,6 +6,7 @@ file(
     TEST_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/**/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/**/**/*.cpp
 )
 
 add_executable(
@@ -20,4 +21,10 @@ target_link_libraries(
     PRIVATE
     MEEDEngine
     googletest
+)
+
+target_include_directories(
+    ${PROJECT_NAME}
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )

@@ -10,9 +10,7 @@
 /**
  * The callback type which is called when deleting each node's data during linked list destruction.
  */
-typedef void (*MEEDLinkedListDeleteCallback)(void* pData);
-
-struct MEEDLinkedList; ///< Opaque structure representing a linked list.
+typedef void (*MEEDNodeDataDeleteCallback)(void* pData);
 
 struct MEEDLinkedListNode; ///< Opaque structure representing a linked list node.
 
@@ -21,10 +19,10 @@ struct MEEDLinkedListNode; ///< Opaque structure representing a linked list node
  */
 struct MEEDLinkedList
 {
-	u32							 size;			  ///< The number of nodes in the linked list.
-	struct MEEDLinkedListNode*	 pHead;			  ///< Pointer to the head node of the linked list.
-	struct MEEDLinkedListNode*	 pTail;			  ///< Pointer to the tail node of the linked list.
-	MEEDLinkedListDeleteCallback pDeleteCallback; ///< Callback function to delete node data.
+	u32						   size;			///< The number of nodes in the linked list.
+	struct MEEDLinkedListNode* pHead;			///< Pointer to the head node of the linked list.
+	struct MEEDLinkedListNode* pTail;			///< Pointer to the tail node of the linked list.
+	MEEDNodeDataDeleteCallback pDeleteCallback; ///< Callback function to delete node data.
 };
 
 /**
@@ -39,7 +37,7 @@ struct MEEDLinkedList
  *
  * @return Pointer to the newly created MEEDLinkedList.
  */
-struct MEEDLinkedList* meedLinkedListCreate(MEEDLinkedListDeleteCallback pDeleteCallback);
+struct MEEDLinkedList* meedLinkedListCreate(MEEDNodeDataDeleteCallback pDeleteCallback);
 
 /**
  * Append the data to the end of the linked list.
