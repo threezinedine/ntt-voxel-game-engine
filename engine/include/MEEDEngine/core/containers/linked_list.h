@@ -1,16 +1,17 @@
 #pragma once
+
+#if __cplusplus
+extern "C" {
+#endif
+
 #include "MEEDEngine/platforms/common.h"
+#include "callback.h"
 
 /**
  * @file linked_list.h
  *
  * Self implemented general linked list container.
  */
-
-/**
- * The callback type which is called when deleting each node's data during linked list destruction.
- */
-typedef void (*MEEDNodeDataDeleteCallback)(void* pData);
 
 struct MEEDLinkedListNode; ///< Opaque structure representing a linked list node.
 
@@ -130,3 +131,7 @@ void meedLinkedListClear(struct MEEDLinkedList* pList);
  * @param pList Pointer to the MEEDLinkedList to be destroyed. If NULL, raises an assertion.
  */
 void meedLinkedListDestroy(struct MEEDLinkedList* pList);
+
+#if __cplusplus
+}
+#endif

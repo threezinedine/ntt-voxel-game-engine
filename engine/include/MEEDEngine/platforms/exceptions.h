@@ -12,8 +12,9 @@ extern "C" {
 enum MEEDExceptionType
 {
 	MEED_EXCEPTION_TYPE_SUCCESS = 0,
-	MEED_EXCEPTION_TYPE_OUT_OF_INDEX,	 ///< Raised when an index is out of bounds of a container.
-	MEED_EXCEPTION_TYPE_EMPTY_CONTAINER, ///< Raised when performing an operation on an empty container.
+	MEED_EXCEPTION_TYPE_OUT_OF_INDEX,	   ///< Raised when an index is out of bounds of a container.
+	MEED_EXCEPTION_TYPE_EMPTY_CONTAINER,   ///< Raised when performing an operation on an empty container.
+	MEED_EXCEPTION_TYPE_INVALID_OPERATION, ///< Raised when an invalid operation is performed.
 };
 
 /**

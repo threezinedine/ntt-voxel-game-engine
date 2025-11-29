@@ -15,6 +15,9 @@ void meedRaiseException(enum MEEDExceptionType type, const char* message, const 
 	case MEED_EXCEPTION_TYPE_EMPTY_CONTAINER:
 		meedPlatformBufferedPrint(errorBuffer, sizeof(errorBuffer), "Empty Container Exception: %s", message);
 		break;
+	case MEED_EXCEPTION_TYPE_INVALID_OPERATION:
+		meedPlatformBufferedPrint(errorBuffer, sizeof(errorBuffer), "Invalid Operation Exception: %s", message);
+		break;
 	default:
 		MEED_UNTOUCHABLE();
 	}
