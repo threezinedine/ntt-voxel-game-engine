@@ -5,7 +5,6 @@
 #include "MEEDEngine/modules/render/renderer.h"
 #include "MEEDEngine/platforms/platforms.h"
 #include "vulkan_common.h"
-#include <vulkan/vulkan.h>
 
 b8 s_isInitialized = MEED_FALSE;
 
@@ -24,47 +23,6 @@ static const char* layers[] = {
 #if MEED_DEBUG
 	"VK_LAYER_KHRONOS_validation",
 #endif
-};
-
-#define NULL_GRAPHICS_FAMILY ((i32)(-1))
-
-struct QueueFamilyIndices
-{
-	i32 graphicsFamily;
-	i32 presentFamily;
-	i32 computeFamily;
-	i32 transferFamily;
-};
-
-/// @brief The context of the Vulkan renderer.
-struct MEEDVulkan
-{
-	struct MEEDWindowData* pWindowData;
-
-	VkInstance instance;
-#if MEED_DEBUG
-	VkDebugUtilsMessengerEXT debugMessenger;
-#endif
-	VkPhysicalDevice		  physicalDevice;
-	VkSurfaceKHR			  surface;
-	struct QueueFamilyIndices queueFamilies; ///< The queue family indices for the selected physical device
-
-	VkDevice device;
-
-	VkQueue graphicsQueue;
-	VkQueue presentQueue;
-
-	VkSurfaceFormatKHR			  surfaceFormat;
-	VkPresentModeKHR			  presentMode;
-	VkExtent2D					  extent;
-	VkSurfaceTransformFlagBitsKHR preTransform;
-	u32							  imagesCount;
-	VkSwapchainKHR				  swapchain;
-
-	VkImage*	 pSwapchainImages;
-	VkImageView* pSwapchainImageViews;
-
-	VkRenderPass renderPass;
 };
 
 struct MEEDVulkan* g_vulkan = MEED_NULL; // Global Vulkan instance

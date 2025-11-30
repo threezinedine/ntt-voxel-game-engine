@@ -36,7 +36,6 @@ if (LINUX_BUILD)
 endif()
 
 # ================ Engine Lib ================
-
 add_library(
     ${PROJECT_NAME}
     STATIC
@@ -74,6 +73,26 @@ if (NOT WEB_BUILD)
         PUBLIC
         MEEDVulkan
     )
+
+    # ============== Vulkan Shader Compilation ==============
+    file(
+        GLOB 
+        VULKAN_SHADER_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders/*.vert
+        ${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders/*.frag
+    )
+
+    foreach(SHADER_FILE ${VULKAN_SHADER_FILES})
+        get_filename_component(SHADER_NAME ${SHADER_FILE} NAME_WE)
+        get_filename_component(SHADER_EXT ${SHADER_FILE} EXT)
+        set(OUTPUT_FILE ${CMAKE_BINARY_DIR}/shaders/${SHADER_NAME}${SHADER_EXT}.spv)
+
+        CompileVulkanShader(
+            TARGET ${PROJECT_NAME}
+            SHADER_FILE ${SHADER_FILE}
+            OUTPUT_FILE ${OUTPUT_FILE}
+        )
+    endforeach()
 endif()
 
 if (NOT WEB_BUILD)
