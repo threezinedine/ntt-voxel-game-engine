@@ -60,6 +60,9 @@ struct MEEDVulkan
 	VkSurfaceTransformFlagBitsKHR preTransform;
 	u32							  imagesCount;
 	VkSwapchainKHR				  swapchain;
+
+	VkImage*	 pSwapchainImages;
+	VkImageView* pSwapchainImageViews;
 };
 
 struct MEEDVulkan* g_vulkan = MEED_NULL; // Global Vulkan instance
@@ -77,6 +80,8 @@ static void createDevice();
 static void getQueues();
 static void chooseSwapchainSettings();
 static void createSwapchain();
+static void getSwapchainImages();
+static void createSwapchainImageViews();
 
 static void deleteGlobalVulkanInstance(void*);
 
@@ -112,6 +117,8 @@ void meedRenderInitialize(struct MEEDWindowData* pWindowData)
 	getQueues();
 	chooseSwapchainSettings();
 	createSwapchain();
+	getSwapchainImages();
+	createSwapchainImageViews();
 
 	s_isInitialized = MEED_TRUE;
 }
@@ -717,6 +724,89 @@ static void deleteSwapchain(void* pData)
 	MEED_ASSERT(g_vulkan->swapchain != MEED_NULL);
 
 	vkDestroySwapchainKHR(g_vulkan->device, g_vulkan->swapchain, MEED_NULL);
+}
+
+static void freeSwapchainImages(void*);
+static void getSwapchainImages()
+{
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->device != MEED_NULL);
+	MEED_ASSERT(g_vulkan->swapchain != MEED_NULL);
+	MEED_ASSERT(g_vulkan->pSwapchainImages == MEED_NULL);
+
+	g_vulkan->pSwapchainImages = MEED_MALLOC_ARRAY(VkImage, g_vulkan->imagesCount);
+	meedReleaseStackPush(s_releaseStack, MEED_NULL, freeSwapchainImages);
+
+	VK_ASSERT(vkGetSwapchainImagesKHR(
+		g_vulkan->device, g_vulkan->swapchain, &g_vulkan->imagesCount, g_vulkan->pSwapchainImages));
+}
+
+static void freeSwapchainImages(void* pData)
+{
+	MEED_UNUSED(pData);
+
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->pSwapchainImages != MEED_NULL);
+
+	MEED_FREE_ARRAY(g_vulkan->pSwapchainImages, VkImage, g_vulkan->imagesCount);
+}
+
+static void freeSwapchainImageViews(void*);
+static void deleteSwapchainImageViews(void*);
+static void createSwapchainImageViews()
+{
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->pSwapchainImages != MEED_NULL);
+	MEED_ASSERT(g_vulkan->pSwapchainImageViews == MEED_NULL);
+
+	g_vulkan->pSwapchainImageViews = MEED_MALLOC_ARRAY(VkImageView, g_vulkan->imagesCount);
+	meedReleaseStackPush(s_releaseStack, MEED_NULL, freeSwapchainImageViews);
+
+	for (u32 imageIndex = 0u; imageIndex < g_vulkan->imagesCount; ++imageIndex)
+	{
+		VkImageViewCreateInfo imageViewCreateInfo			= {};
+		imageViewCreateInfo.sType							= VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		imageViewCreateInfo.image							= g_vulkan->pSwapchainImages[imageIndex];
+		imageViewCreateInfo.viewType						= VK_IMAGE_VIEW_TYPE_2D;
+		imageViewCreateInfo.format							= g_vulkan->surfaceFormat.format;
+		imageViewCreateInfo.components.r					= VK_COMPONENT_SWIZZLE_IDENTITY;
+		imageViewCreateInfo.components.g					= VK_COMPONENT_SWIZZLE_IDENTITY;
+		imageViewCreateInfo.components.b					= VK_COMPONENT_SWIZZLE_IDENTITY;
+		imageViewCreateInfo.components.a					= VK_COMPONENT_SWIZZLE_IDENTITY;
+		imageViewCreateInfo.subresourceRange.aspectMask		= VK_IMAGE_ASPECT_COLOR_BIT;
+		imageViewCreateInfo.subresourceRange.baseMipLevel	= 0;
+		imageViewCreateInfo.subresourceRange.levelCount		= 1;
+		imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+		imageViewCreateInfo.subresourceRange.layerCount		= 1;
+
+		VK_ASSERT(vkCreateImageView(
+			g_vulkan->device, &imageViewCreateInfo, MEED_NULL, &g_vulkan->pSwapchainImageViews[imageIndex]));
+	}
+	meedReleaseStackPush(s_releaseStack, MEED_NULL, deleteSwapchainImageViews);
+}
+
+static void freeSwapchainImageViews(void* pData)
+{
+	MEED_UNUSED(pData);
+
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->pSwapchainImageViews != MEED_NULL);
+
+	MEED_FREE_ARRAY(g_vulkan->pSwapchainImageViews, VkImageView, g_vulkan->imagesCount);
+}
+
+static void deleteSwapchainImageViews(void* pData)
+{
+	MEED_UNUSED(pData);
+
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->device != MEED_NULL);
+	MEED_ASSERT(g_vulkan->pSwapchainImageViews != MEED_NULL);
+
+	for (u32 imageIndex = 0u; imageIndex < g_vulkan->imagesCount; ++imageIndex)
+	{
+		vkDestroyImageView(g_vulkan->device, g_vulkan->pSwapchainImageViews[imageIndex], MEED_NULL);
+	}
 }
 
 #endif // MEED_USE_VULKAN
