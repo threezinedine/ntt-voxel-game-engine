@@ -23,17 +23,28 @@ target_link_libraries(
 
 message(STATUS "Found Vulkan SDK: ${Vulkan_VERSION}")
 
+set(ALL_SPV_FILES)
+
 macro(CompileVulkanShader)
     set(options )
-    set(oneValueArgs TARGET SHADER_FILE OUTPUT_FILE)
+    set(oneValueArgs SHADER_FILE OUTPUT_FILE)
     set(multiValueArgs )
     cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     add_custom_command(
-        TARGET ${ARG_TARGET}
+        OUTPUT ${ARG_OUTPUT_FILE}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/shaders
         COMMAND ${Vulkan_GLSLC_EXECUTABLE} ${ARG_SHADER_FILE} -o ${ARG_OUTPUT_FILE}
         DEPENDS ${ARG_SHADER_FILE}
         COMMENT "Compiling Vulkan shader: ${ARG_SHADER_FILE} -> ${ARG_OUTPUT_FILE}"
     )
+    list(APPEND ALL_SPV_FILES ${ARG_OUTPUT_FILE})
 endmacro()
+
+macro(CompileAllVulkanShaders TARGET_NAME)
+    add_custom_target(CompileAllVulkanShaders ALL
+        DEPENDS ${ALL_SPV_FILES}
+    )
+    add_dependencies(${TARGET_NAME} CompileAllVulkanShaders)
+endmacro()
+

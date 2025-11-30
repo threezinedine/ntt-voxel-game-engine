@@ -86,13 +86,14 @@ if (NOT WEB_BUILD)
         get_filename_component(SHADER_NAME ${SHADER_FILE} NAME_WE)
         get_filename_component(SHADER_EXT ${SHADER_FILE} EXT)
         set(OUTPUT_FILE ${CMAKE_BINARY_DIR}/shaders/${SHADER_NAME}${SHADER_EXT}.spv)
+        string(REPLACE "." "" SHADER_EXT ${SHADER_EXT}) # Remove dot from extension
 
         CompileVulkanShader(
-            TARGET ${PROJECT_NAME}
             SHADER_FILE ${SHADER_FILE}
             OUTPUT_FILE ${OUTPUT_FILE}
         )
     endforeach()
+    CompileAllVulkanShaders(${PROJECT_NAME})
 endif()
 
 if (NOT WEB_BUILD)
