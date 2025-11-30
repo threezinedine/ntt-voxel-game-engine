@@ -13,6 +13,13 @@
             ]
         },
         {
+            "name": "app",
+            "path": "app",
+            "[c]": {
+                "editor.defaultFormatter": "xaver.clang-format"
+            }
+        },
+        {
             "name": "engine",
             "path": "engine",
             "[c]": {

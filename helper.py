@@ -13,7 +13,6 @@ from config import (
     RunPythonTest,
     RunApplication,
     CreateEnvironment,
-    BuildEngineWebLib,
     RunEditorConvertUI,
     ValidateCommandExist,
     InstallCDependencies,
@@ -76,8 +75,6 @@ def main():
         RunExample(**args.Args)
     elif args.IsRunAutogen:
         pass
-    elif args.IsRunWebRuntime:
-        BuildEngineWebLib(**args.Args)
     else:
         raise NotImplementedError(
             f"The command {args.args.command} is missing or not implemented."

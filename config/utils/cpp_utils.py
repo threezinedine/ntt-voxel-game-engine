@@ -50,6 +50,7 @@ def InstallCDependencies(
 
 def BuildCProject(
     project: str = "",
+    web: bool = False,
     type: str = "debug",
     **kwargs: Any,
 ) -> None:
@@ -58,22 +59,28 @@ def BuildCProject(
 
     Arguments:
         project (str): The path to the C++ project.
+        web (bool): Whether to build for web platform using Emscripten. Defaults to False.
         type (str): The build type, either 'debug' or 'release'. Defaults to 'debug'.
 
     """
-    additionalOptions = ""
-
-    if SYSTEM.IsWindowsPlatform:
-        additionalOptions = "-G Visual Studio 17 2022"
-
-    if type.lower() == "release":
-        additionalOptions += " -DCMAKE_BUILD_TYPE=Release"
+    if web:
+        BuildEngineWebLib(project=project, **kwargs)
     else:
-        additionalOptions += " -DCMAKE_BUILD_TYPE=Debug"
+        additionalOptions = ""
 
-    logger.info(f'Building project "{project}" with build type "{type}"...')
-    RunCommand(f"cmake -S . -B build/{type} {additionalOptions}", cwd=project)
-    RunCommand(f"cmake --build build/{type} --config {type.capitalize()}", cwd=project)
+        if SYSTEM.IsWindowsPlatform:
+            additionalOptions = "-G Visual Studio 17 2022"
+
+        if type.lower() == "release":
+            additionalOptions += " -DCMAKE_BUILD_TYPE=Release"
+        else:
+            additionalOptions += " -DCMAKE_BUILD_TYPE=Debug"
+
+        logger.info(f'Building project "{project}" with build type "{type}"...')
+        RunCommand(f"cmake -S . -B build/{type} {additionalOptions}", cwd=project)
+        RunCommand(
+            f"cmake --build build/{type} --config {type.capitalize()}", cwd=project
+        )
 
 
 def RunTestEngine(
@@ -160,6 +167,7 @@ def RunExample(
 
 def RunApplication(
     type: str = "debug",
+    web: bool = False,
     **kwargs: Any,
 ) -> None:
     """
@@ -168,6 +176,10 @@ def RunApplication(
     Arguments:
         type (str): The build type, either 'debug' or 'release'. Defaults to 'debug'.
     """
+    if web:
+        RunApplicationWeb(type=type, **kwargs)
+        return
+
     if SYSTEM.IsWindowsPlatform:
         appDir = os.path.join(
             SYSTEM.BaseDir,
@@ -200,7 +212,15 @@ def RunApplication(
         RunCommand(f"./MEEDApp", cwd=appDir)
 
 
+def RunApplicationWeb(
+    type: str = "debug",
+    **kwargs: Any,
+) -> None:
+    pass
+
+
 def BuildEngineWebLib(
+    project: str = "engine",
     **kwargs: Any,
 ) -> None:
     from ..conf import VARIABLES
@@ -209,14 +229,14 @@ def BuildEngineWebLib(
         VARIABLES.EMCMAKE is not None
     ), '"EMCMAKE" variable is not set in the configuration.'
 
-    engineDir = os.path.join(SYSTEM.BaseDir, "engine")
+    projectDir = os.path.join(SYSTEM.BaseDir, project)
 
     RunCommand(
         f"{VARIABLES.EMCMAKE} cmake -S . -B build/webruntime -DCMAKE_BUILD_TYPE=Release -DEMCC_FORCE_STDLIBS=ON",
-        cwd=engineDir,
+        cwd=projectDir,
     )
 
     RunCommand(
         f"cmake --build build/webruntime --config Release",
-        cwd=engineDir,
+        cwd=projectDir,
     )

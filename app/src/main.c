@@ -5,6 +5,17 @@ int main(void)
 	meedPlatformMemoryInitialize();
 	meedWindowInitialize();
 
+	struct MEEDPlatformConsoleConfig config;
+	config.color = MEED_CONSOLE_COLOR_GREEN;
+	meedPlatformSetConsoleConfig(config);
+
+#if PLATFORM_IS_WEB
+	meedPlatformPrint("Web build detected. Window creation is not supported in this environment.\n");
+#else
+	meedPlatformPrint("Starting MEED Application...\n");
+#endif
+
+#if !PLATFORM_IS_WEB
 	struct MEEDWindowData* pWindowData = meedWindowCreate(800, 600, "MEED Application Window");
 
 	while (pWindowData->shouldClose == MEED_FALSE)
@@ -18,6 +29,7 @@ int main(void)
 	}
 
 	meedWindowDestroy(pWindowData);
+#endif
 
 	meedWindowShutdown();
 	meedPlatformMemoryShutdown();

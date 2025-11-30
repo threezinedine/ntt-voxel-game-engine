@@ -42,12 +42,14 @@ def GenerateTemplate(template: Template) -> tuple[str, list[str]]:
         logger.warning(f'Template file "{template.file}" does not exist, skipping...')
         return "", []
 
-    outputFile = template.file[:-3]  # remove .in extension
+    outputFiles = [template.file[:-3]]  # remove .in extension
 
-    if template.output is not None:
-        outputFile = template.output
+    if template.outputs is not None:
+        outputFiles = template.outputs
 
-    fullOutputPath = os.path.join(SYSTEM.BaseDir, outputFile)
+    fullOutputPaths = [
+        os.path.join(SYSTEM.BaseDir, outputFile) for outputFile in outputFiles
+    ]
 
     isAnyDependencyModified = False
     for depFile in allDependencies:
@@ -58,7 +60,7 @@ def GenerateTemplate(template: Template) -> tuple[str, list[str]]:
     if (
         not isAnyDependencyModified
         and not IsFileModified(template.file)
-        and os.path.exists(fullOutputPath)
+        and all(os.path.exists(fullOutputPath) for fullOutputPath in fullOutputPaths)
     ):
         logger.debug(
             f'Template file "{template.file}" has not been modified, skipping...'
@@ -70,10 +72,13 @@ def GenerateTemplate(template: Template) -> tuple[str, list[str]]:
         jinjaTemplate = JinjaTemplate(templateContent)
         renderedContent = jinjaTemplate.render(**TEMPLATE_DATA)
 
-    with open(fullOutputPath, "w") as f:
-        f.write(renderedContent)
+    for outputFile, fullOutputPath in zip(outputFiles, fullOutputPaths):
+        os.makedirs(os.path.dirname(fullOutputPath), exist_ok=True)
 
-    logger.info(f'Generated file "{outputFile}" from template "{template.file}".')
+        with open(fullOutputPath, "w") as f:
+            f.write(renderedContent)
+
+        logger.info(f'Generated file "{outputFile}" from template "{template.file}".')
 
     UpdateFileStamp(template.file)
 

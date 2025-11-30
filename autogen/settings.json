@@ -29,6 +29,9 @@
             "file": "engine/.vscode/c_cpp_properties.json.in"
         },
         {
+            "file": "app/.vscode/c_cpp_properties.json.in"
+        },
+        {
             "file": "cmake/MEEDConfigure.cmake.in"
         },
         {

@@ -139,5 +139,4 @@ if (NOT WEB_BUILD)
         DEPENDS ${LIB_FILE}
         COMMENT "Copying MEED Engine binding to Editor directory"
     )
-
 endif()

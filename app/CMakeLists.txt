@@ -24,3 +24,9 @@ target_link_libraries(
     PRIVATE 
     MEEDEngine
 )
+
+target_compile_definitions(
+    ${PROJECT_NAME}
+    PRIVATE 
+    ${COMMON_DEFINITIONS}
+)

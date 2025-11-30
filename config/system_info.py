@@ -20,7 +20,7 @@ class SystemInfo:
             self._intelliSenseMode = "windows-clang-x64"
         elif self.IsLinuxPlatform:
             self._compilerPath = "/usr/bin/g++"
-            self._intelliSenseMode = "linux-g++-x64"
+            self._intelliSenseMode = "linux-gcc-arm64"
 
         self._pythonIncludeDir = sysconfig.get_path("include")
 

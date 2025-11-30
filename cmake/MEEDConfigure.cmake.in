@@ -48,13 +48,30 @@ macro(MEEDSetup)
     else()
         list(APPEND COMMON_DEFINITIONS MEED_RELEASE)
     endif()
+
+    if (WEB_BUILD)
+        if (MEED_USE_VULKAN STREQUAL "ON")
+            message(WARNING "Vulkan is not supported on Web platform. Disabling MEED_USE_VULKAN.")
+            set(MEED_USE_VULKAN OFF CACHE BOOL "Disable Vulkan on Web platform" FORCE)
+            list(REMOVE_ITEM COMMON_DEFINITIONS "MEED_USE_VULKAN=1")
+        endif()
+    endif()
+
+    message(STATUS "Platform Definitions: ${COMMON_DEFINITIONS}")
 endmacro()
 
 macro(MEEDFindPackage PACKAGE_NAME FOLDER)
     set(CMAKE_FOLDER ${FOLDER})
+
+    if (WEB_BUILD)
+        set(MEEDEngine_DIR "${CMAKE_MODULE_DIR}")
+    endif()
+
     find_package(${PACKAGE_NAME} REQUIRED PATHS ${CMAKE_MODULE_DIR})
     unset(CMAKE_FOLDER CACHE)
 
-    set(CMAKE_C_FLAGS "-m64")
-    set(CMAKE_CXX_FLAGS "-m64")
+    if (NOT WEB_BUILD)
+        set(CMAKE_C_FLAGS "-m64")
+        set(CMAKE_CXX_FLAGS "-m64")
+    endif()
 endmacro()

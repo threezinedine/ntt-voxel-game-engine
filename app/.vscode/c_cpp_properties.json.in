@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "name": "Engine",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/../externals/**",
+                "${workspaceFolder}/../engine/**",
+                "{{ PYTHON_INCLUDE_DIR }}"
+            ],
+            "defines": [
+                "{{ PLATFORM_DEFINE }}",
+                "MEED_DEBUG",
+                "MEED_USE_VULKAN",
+                "PROJECT_BASE_DIR=\"{{ BASE_DIR }}\""
+            ],
+            "compilerPath": "{{ COMPILER_PATH }}",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "{{ INTELLISENSE_MODE }}"
+        }
+    ],
+    "version": 4
+}
