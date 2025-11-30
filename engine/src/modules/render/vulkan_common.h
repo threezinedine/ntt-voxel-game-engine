@@ -62,6 +62,12 @@ struct MEEDVulkan
 	VkImageView* pSwapchainImageViews;
 
 	VkRenderPass renderPass;
+
+	VkCommandPool graphicsCommandPool;
+	VkCommandPool presentCommandPool;
+
+	VkCommandBuffer graphicsCommandBuffer;
+	VkCommandBuffer presentCommandBuffer;
 };
 
 extern struct MEEDVulkan* g_vulkan; // Global Vulkan instance

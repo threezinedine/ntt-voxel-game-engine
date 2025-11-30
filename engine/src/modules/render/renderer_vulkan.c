@@ -43,6 +43,8 @@ static void createSwapchain();
 static void getSwapchainImages();
 static void createSwapchainImageViews();
 static void createRenderPass();
+static void createCommandPools();
+static void allocateCommandBuffers();
 
 static void deleteGlobalVulkanInstance(void*);
 
@@ -81,6 +83,8 @@ void meedRenderInitialize(struct MEEDWindowData* pWindowData)
 	getSwapchainImages();
 	createSwapchainImageViews();
 	createRenderPass();
+	createCommandPools();
+	allocateCommandBuffers();
 
 	s_isInitialized = MEED_TRUE;
 }
@@ -846,6 +850,97 @@ static void deleteRenderPass(void* pData)
 	MEED_ASSERT(g_vulkan->renderPass != MEED_NULL);
 
 	vkDestroyRenderPass(g_vulkan->device, g_vulkan->renderPass, MEED_NULL);
+}
+
+static void deleteCommandPool(void*);
+static void createCommandPools()
+{
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->device != MEED_NULL);
+	MEED_ASSERT(g_vulkan->graphicsCommandPool == MEED_NULL);
+	MEED_ASSERT(g_vulkan->presentCommandPool == MEED_NULL);
+
+	VkCommandPoolCreateInfo commandPoolCreateInfo = {};
+	commandPoolCreateInfo.sType					  = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	commandPoolCreateInfo.flags					  = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+	commandPoolCreateInfo.queueFamilyIndex		  = g_vulkan->queueFamilies.graphicsFamily;
+	VK_ASSERT(vkCreateCommandPool(g_vulkan->device, &commandPoolCreateInfo, MEED_NULL, &g_vulkan->graphicsCommandPool));
+	meedReleaseStackPush(s_releaseStack, MEED_NULL, deleteCommandPool);
+
+	if (g_vulkan->queueFamilies.presentFamily != g_vulkan->queueFamilies.graphicsFamily)
+	{
+		VkCommandPoolCreateInfo presentCommandPoolCreateInfo = {};
+		presentCommandPoolCreateInfo.sType					 = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		presentCommandPoolCreateInfo.flags					 = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		presentCommandPoolCreateInfo.queueFamilyIndex		 = g_vulkan->queueFamilies.presentFamily;
+		VK_ASSERT(vkCreateCommandPool(
+			g_vulkan->device, &presentCommandPoolCreateInfo, MEED_NULL, &g_vulkan->presentCommandPool));
+		meedReleaseStackPush(s_releaseStack, MEED_NULL, deleteCommandPool);
+	}
+	else
+	{
+		g_vulkan->presentCommandPool = g_vulkan->graphicsCommandPool;
+	}
+}
+
+static void deleteCommandPool(void* pData)
+{
+	MEED_UNUSED(pData);
+
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->device != MEED_NULL);
+	MEED_ASSERT(g_vulkan->graphicsCommandPool != MEED_NULL);
+
+	vkDestroyCommandPool(g_vulkan->device, g_vulkan->graphicsCommandPool, MEED_NULL);
+
+	if (g_vulkan->queueFamilies.graphicsFamily != g_vulkan->queueFamilies.presentFamily)
+	{
+		MEED_ASSERT(g_vulkan->presentCommandPool != MEED_NULL);
+		vkDestroyCommandPool(g_vulkan->device, g_vulkan->presentCommandPool, MEED_NULL);
+	}
+}
+
+static void freeCommandBuffers(void*);
+static void allocateCommandBuffers()
+{
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->device != MEED_NULL);
+	MEED_ASSERT(g_vulkan->graphicsCommandPool != MEED_NULL);
+	MEED_ASSERT(g_vulkan->presentCommandPool != MEED_NULL);
+
+	VkCommandBufferAllocateInfo graphicsCommandBufferAllocateInfo = {};
+	graphicsCommandBufferAllocateInfo.sType						  = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	graphicsCommandBufferAllocateInfo.commandPool				  = g_vulkan->graphicsCommandPool;
+	graphicsCommandBufferAllocateInfo.level						  = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	graphicsCommandBufferAllocateInfo.commandBufferCount		  = 1;
+	VK_ASSERT(vkAllocateCommandBuffers(
+		g_vulkan->device, &graphicsCommandBufferAllocateInfo, &g_vulkan->graphicsCommandBuffer));
+
+	VkCommandBufferAllocateInfo presentCommandBufferAllocateInfo = {};
+	presentCommandBufferAllocateInfo.sType						 = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	presentCommandBufferAllocateInfo.commandPool				 = g_vulkan->presentCommandPool;
+	presentCommandBufferAllocateInfo.level						 = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	presentCommandBufferAllocateInfo.commandBufferCount			 = 1;
+	VK_ASSERT(
+		vkAllocateCommandBuffers(g_vulkan->device, &presentCommandBufferAllocateInfo, &g_vulkan->presentCommandBuffer));
+	meedReleaseStackPush(s_releaseStack, MEED_NULL, freeCommandBuffers);
+}
+
+static void freeCommandBuffers(void* pData)
+{
+	MEED_UNUSED(pData);
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->device != MEED_NULL);
+	MEED_ASSERT(g_vulkan->graphicsCommandPool != MEED_NULL);
+	MEED_ASSERT(g_vulkan->graphicsCommandBuffer != MEED_NULL);
+
+	vkFreeCommandBuffers(g_vulkan->device, g_vulkan->graphicsCommandPool, 1, &g_vulkan->graphicsCommandBuffer);
+	g_vulkan->graphicsCommandBuffer = MEED_NULL;
+
+	MEED_ASSERT(g_vulkan->presentCommandPool != MEED_NULL);
+	MEED_ASSERT(g_vulkan->presentCommandBuffer != MEED_NULL);
+	vkFreeCommandBuffers(g_vulkan->device, g_vulkan->presentCommandPool, 1, &g_vulkan->presentCommandBuffer);
+	g_vulkan->presentCommandBuffer = MEED_NULL;
 }
 
 #endif // MEED_USE_VULKAN
