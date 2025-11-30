@@ -15,8 +15,23 @@ int main(void)
 	while (!pWindow->shouldClose)
 	{
 		meedWindowPollEvents(pWindow);
-		// Rendering and update logic would go here
+
+		meedRenderClearScreen((struct MEEDColor){0.1f, 0.1f, 0.1f, 1.0f});
+
+		meedRenderStartFrame();
+
+		// Rendering commands below...
+		meedPipelineUse(pPipeline);
+		meedRenderDraw(3, 1, 0, 0);
+
+		// Rendering commands above...
+
+		meedRenderEndFrame();
+
+		meedRenderPresent();
 	}
+
+	meedWaitIdle();
 
 	meedPipelineDestroy(pPipeline);
 	meedWindowDestroy(pWindow);

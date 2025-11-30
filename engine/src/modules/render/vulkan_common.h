@@ -68,13 +68,16 @@ struct MEEDVulkan
 	VkCommandPool graphicsCommandPool;
 	VkCommandPool presentCommandPool;
 
-	VkCommandBuffer graphicsCommandBuffer;
-	VkCommandBuffer presentCommandBuffer;
+	VkCommandBuffer graphicsCommandBuffers[FRAME_IN_FLIGHT_COUNT];
 
 	u32			currentFrame;
+	u32			imageIndex;
 	VkFence		inFlightFences[FRAME_IN_FLIGHT_COUNT];
 	VkSemaphore imageAvailableSemaphores[FRAME_IN_FLIGHT_COUNT];
 	VkSemaphore renderFinishedSemaphores[FRAME_IN_FLIGHT_COUNT];
+
+	VkRenderingAttachmentInfo colorAttachmentInfos[FRAME_IN_FLIGHT_COUNT];
+	VkRenderingInfoKHR		  renderingInfos[FRAME_IN_FLIGHT_COUNT];
 };
 
 extern struct MEEDVulkan* g_vulkan; // Global Vulkan instance

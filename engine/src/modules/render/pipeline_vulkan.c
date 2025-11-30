@@ -94,7 +94,7 @@ static void createPipeline(struct MEEDPipeline* pPipeline)
 	MEED_ASSERT(pPipeline != MEED_NULL);
 	MEED_ASSERT(g_vulkan != MEED_NULL);
 	MEED_ASSERT(g_vulkan->device != MEED_NULL);
-	MEED_ASSERT(g_vulkan->renderPass != MEED_NULL);
+	// MEED_ASSERT(g_vulkan->renderPass != MEED_NULL);
 
 	struct VulkanPipeline* pVulkanPipeline = (struct VulkanPipeline*)pPipeline->pInternal;
 
@@ -205,8 +205,18 @@ static void createPipeline(struct MEEDPipeline* pPipeline)
 	dynamicState.dynamicStateCount				  = MEED_ARRAY_SIZE(dynamicStates);
 	dynamicState.pDynamicStates					  = dynamicStates;
 
+	VkFormat colorFormats[] = {g_vulkan->surfaceFormat.format};
+
+	VkPipelineRenderingCreateInfo pipelineRenderingInfo = {};
+	pipelineRenderingInfo.sType							= VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+	pipelineRenderingInfo.colorAttachmentCount			= 1;
+	pipelineRenderingInfo.pColorAttachmentFormats		= colorFormats;
+	pipelineRenderingInfo.depthAttachmentFormat			= VK_FORMAT_D32_SFLOAT;
+	pipelineRenderingInfo.stencilAttachmentFormat		= VK_FORMAT_UNDEFINED;
+
 	VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
 	pipelineCreateInfo.sType						= VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	pipelineCreateInfo.pNext						= &pipelineRenderingInfo;
 	pipelineCreateInfo.stageCount					= MEED_ARRAY_SIZE(shaderStages);
 	pipelineCreateInfo.pStages						= shaderStages;
 	pipelineCreateInfo.pVertexInputState			= &vertexInputInfo;
@@ -219,8 +229,12 @@ static void createPipeline(struct MEEDPipeline* pPipeline)
 	pipelineCreateInfo.pColorBlendState				= &colorBlending;
 	pipelineCreateInfo.pDynamicState				= &dynamicState;
 	pipelineCreateInfo.layout						= pVulkanPipeline->layout;
+#if 0
 	pipelineCreateInfo.renderPass					= g_vulkan->renderPass;
-	pipelineCreateInfo.subpass						= 0;
+#else
+	pipelineCreateInfo.renderPass = MEED_NULL;
+#endif
+	pipelineCreateInfo.subpass = 0;
 
 	VK_ASSERT(vkCreateGraphicsPipelines(
 		g_vulkan->device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, MEED_NULL, &pVulkanPipeline->pipeline));
@@ -237,6 +251,19 @@ static void destroyPipeline(void* pData)
 	struct VulkanPipeline* pVulkanPipeline = (struct VulkanPipeline*)pPipeline->pInternal;
 
 	vkDestroyPipeline(g_vulkan->device, pVulkanPipeline->pipeline, MEED_NULL);
+}
+
+void meedPipelineUse(struct MEEDPipeline* pPipeline)
+{
+	MEED_ASSERT(pPipeline != MEED_NULL);
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->graphicsCommandBuffers != MEED_NULL);
+
+	struct VulkanPipeline* pVulkanPipeline = (struct VulkanPipeline*)pPipeline->pInternal;
+
+	vkCmdBindPipeline(g_vulkan->graphicsCommandBuffers[g_vulkan->currentFrame],
+					  VK_PIPELINE_BIND_POINT_GRAPHICS,
+					  pVulkanPipeline->pipeline);
 }
 
 void meedPipelineDestroy(struct MEEDPipeline* pPipeline)

@@ -16,7 +16,8 @@ static const char* instanceExtensions[] = {
 };
 
 static const char* deviceExtensions[] = {
-	"VK_KHR_swapchain",
+	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+	VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
 };
 
 static const char* layers[] = {
@@ -83,7 +84,7 @@ void meedRenderInitialize(struct MEEDWindowData* pWindowData)
 	createSwapchain();
 	getSwapchainImages();
 	createSwapchainImageViews();
-	createRenderPass();
+	// createRenderPass();
 	createCommandPools();
 	allocateCommandBuffers();
 	createSyncObjects();
@@ -463,8 +464,18 @@ static void createDevice()
 		pQueueCreateInfos[i] = queueCreateInfo;
 	}
 
+	VkPhysicalDeviceFeatures2 feature2 = {};
+	feature2.sType					   = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+
+	VkPhysicalDeviceVulkan13Features vulkan13Features = {};
+	vulkan13Features.sType							  = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+	vulkan13Features.dynamicRendering				  = VK_TRUE;
+	vulkan13Features.synchronization2				  = VK_TRUE;
+	vulkan13Features.pNext							  = &feature2;
+
 	VkDeviceCreateInfo deviceCreateInfo		 = {};
 	deviceCreateInfo.sType					 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	deviceCreateInfo.pNext					 = &vulkan13Features;
 	deviceCreateInfo.enabledExtensionCount	 = MEED_ARRAY_SIZE(deviceExtensions);
 	deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions;
 	deviceCreateInfo.queueCreateInfoCount	 = uniqueQueueFamiliesCount;
@@ -914,17 +925,9 @@ static void allocateCommandBuffers()
 	graphicsCommandBufferAllocateInfo.sType						  = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	graphicsCommandBufferAllocateInfo.commandPool				  = g_vulkan->graphicsCommandPool;
 	graphicsCommandBufferAllocateInfo.level						  = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	graphicsCommandBufferAllocateInfo.commandBufferCount		  = 1;
+	graphicsCommandBufferAllocateInfo.commandBufferCount		  = FRAME_IN_FLIGHT_COUNT;
 	VK_ASSERT(vkAllocateCommandBuffers(
-		g_vulkan->device, &graphicsCommandBufferAllocateInfo, &g_vulkan->graphicsCommandBuffer));
-
-	VkCommandBufferAllocateInfo presentCommandBufferAllocateInfo = {};
-	presentCommandBufferAllocateInfo.sType						 = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	presentCommandBufferAllocateInfo.commandPool				 = g_vulkan->presentCommandPool;
-	presentCommandBufferAllocateInfo.level						 = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	presentCommandBufferAllocateInfo.commandBufferCount			 = 1;
-	VK_ASSERT(
-		vkAllocateCommandBuffers(g_vulkan->device, &presentCommandBufferAllocateInfo, &g_vulkan->presentCommandBuffer));
+		g_vulkan->device, &graphicsCommandBufferAllocateInfo, g_vulkan->graphicsCommandBuffers));
 	meedReleaseStackPush(s_releaseStack, MEED_NULL, freeCommandBuffers);
 }
 
@@ -934,15 +937,10 @@ static void freeCommandBuffers(void* pData)
 	MEED_ASSERT(g_vulkan != MEED_NULL);
 	MEED_ASSERT(g_vulkan->device != MEED_NULL);
 	MEED_ASSERT(g_vulkan->graphicsCommandPool != MEED_NULL);
-	MEED_ASSERT(g_vulkan->graphicsCommandBuffer != MEED_NULL);
+	MEED_ASSERT(g_vulkan->graphicsCommandBuffers != MEED_NULL);
 
-	vkFreeCommandBuffers(g_vulkan->device, g_vulkan->graphicsCommandPool, 1, &g_vulkan->graphicsCommandBuffer);
-	g_vulkan->graphicsCommandBuffer = MEED_NULL;
-
-	MEED_ASSERT(g_vulkan->presentCommandPool != MEED_NULL);
-	MEED_ASSERT(g_vulkan->presentCommandBuffer != MEED_NULL);
-	vkFreeCommandBuffers(g_vulkan->device, g_vulkan->presentCommandPool, 1, &g_vulkan->presentCommandBuffer);
-	g_vulkan->presentCommandBuffer = MEED_NULL;
+	vkFreeCommandBuffers(
+		g_vulkan->device, g_vulkan->graphicsCommandPool, FRAME_IN_FLIGHT_COUNT, g_vulkan->graphicsCommandBuffers);
 }
 
 static void deleteSyncObjects(void*);
@@ -991,6 +989,206 @@ static void deleteSyncObjects(void* pData)
 		vkDestroySemaphore(g_vulkan->device, g_vulkan->renderFinishedSemaphores[frameIndex], MEED_NULL);
 		vkDestroySemaphore(g_vulkan->device, g_vulkan->imageAvailableSemaphores[frameIndex], MEED_NULL);
 	}
+}
+
+static void transitionImageLayout(VkImage			   image,
+								  VkImageLayout		   oldLayout,
+								  VkImageLayout		   newLayout,
+								  VkAccessFlags		   srcAccessMask,
+								  VkAccessFlags		   dstAccessMask,
+								  VkPipelineStageFlags srcStage,
+								  VkPipelineStageFlags dstStage);
+
+void meedRenderStartFrame()
+{
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->graphicsCommandBuffers != MEED_NULL);
+
+	vkWaitForFences(g_vulkan->device, 1, &g_vulkan->inFlightFences[g_vulkan->currentFrame], VK_TRUE, UINT64_MAX);
+	VK_ASSERT(vkResetFences(g_vulkan->device, 1, &g_vulkan->inFlightFences[g_vulkan->currentFrame]));
+
+	vkAcquireNextImageKHR(g_vulkan->device,
+						  g_vulkan->swapchain,
+						  UINT64_MAX,
+						  g_vulkan->imageAvailableSemaphores[g_vulkan->currentFrame],
+						  VK_NULL_HANDLE,
+						  &g_vulkan->imageIndex);
+
+	VkCommandBufferBeginInfo commandBufferBeginInfo = {};
+	commandBufferBeginInfo.sType					= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+	VK_ASSERT(vkBeginCommandBuffer(g_vulkan->graphicsCommandBuffers[g_vulkan->currentFrame], &commandBufferBeginInfo));
+
+	transitionImageLayout(g_vulkan->pSwapchainImages[g_vulkan->imageIndex],
+						  VK_IMAGE_LAYOUT_UNDEFINED,
+						  VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+						  VK_ACCESS_NONE,
+						  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+						  VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+						  VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+
+	VkRenderingInfo* pRenderingInfo		 = &g_vulkan->renderingInfos[g_vulkan->currentFrame];
+	pRenderingInfo->sType				 = VK_STRUCTURE_TYPE_RENDERING_INFO;
+	pRenderingInfo->renderArea.offset.x	 = 0;
+	pRenderingInfo->renderArea.offset.y	 = 0;
+	pRenderingInfo->renderArea.extent	 = g_vulkan->extent;
+	pRenderingInfo->layerCount			 = 1;
+	pRenderingInfo->pColorAttachments	 = &g_vulkan->colorAttachmentInfos[g_vulkan->currentFrame];
+	pRenderingInfo->colorAttachmentCount = 1;
+
+	vkCmdBeginRendering(g_vulkan->graphicsCommandBuffers[g_vulkan->currentFrame], pRenderingInfo);
+
+	VkViewport viewport = {};
+	viewport.x			= 0.0f;
+	viewport.y			= 0.0f;
+	viewport.width		= (f32)g_vulkan->extent.width;
+	viewport.height		= (f32)g_vulkan->extent.height;
+	viewport.minDepth	= 0.0f;
+	viewport.maxDepth	= 1.0f;
+
+	VkRect2D scissor = {};
+	scissor.offset.x = 0;
+	scissor.offset.y = 0;
+	scissor.extent	 = g_vulkan->extent;
+
+	vkCmdSetViewport(g_vulkan->graphicsCommandBuffers[g_vulkan->currentFrame], 0, 1, &viewport);
+	vkCmdSetScissor(g_vulkan->graphicsCommandBuffers[g_vulkan->currentFrame], 0, 1, &scissor);
+}
+
+void meedRenderClearScreen(struct MEEDColor color)
+{
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+
+	VkClearValue clearValue		= {};
+	clearValue.color.float32[0] = color.r;
+	clearValue.color.float32[1] = color.g;
+	clearValue.color.float32[2] = color.b;
+	clearValue.color.float32[3] = color.a;
+
+	VkRenderingAttachmentInfo* attachmentInfo = &g_vulkan->colorAttachmentInfos[g_vulkan->currentFrame];
+	attachmentInfo->sType					  = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+	attachmentInfo->clearValue				  = clearValue;
+	attachmentInfo->loadOp					  = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	attachmentInfo->storeOp					  = VK_ATTACHMENT_STORE_OP_STORE;
+	attachmentInfo->imageView				  = g_vulkan->pSwapchainImageViews[g_vulkan->imageIndex];
+	attachmentInfo->imageLayout				  = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+}
+
+void meedRenderDraw(u32 vertexCount, u32 instanceCount, u32 firstVertex, u32 firstInstance)
+{
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->graphicsCommandBuffers != MEED_NULL);
+
+	vkCmdDraw(g_vulkan->graphicsCommandBuffers[g_vulkan->currentFrame],
+			  vertexCount,
+			  instanceCount,
+			  firstVertex,
+			  firstInstance);
+}
+
+void meedRenderEndFrame()
+{
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->graphicsCommandBuffers != MEED_NULL);
+	MEED_ASSERT(g_vulkan->graphicsQueue != MEED_NULL);
+
+	vkCmdEndRendering(g_vulkan->graphicsCommandBuffers[g_vulkan->currentFrame]);
+
+	transitionImageLayout(g_vulkan->pSwapchainImages[g_vulkan->imageIndex],
+						  VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+						  VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+						  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+						  VK_ACCESS_NONE,
+						  VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+						  VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
+
+	VK_ASSERT(vkEndCommandBuffer(g_vulkan->graphicsCommandBuffers[g_vulkan->currentFrame]));
+
+	// Submit command buffer
+	VkSemaphore waitSemaphores[] = {
+		g_vulkan->imageAvailableSemaphores[g_vulkan->currentFrame],
+	};
+
+	VkSemaphore signalSemaphores[] = {
+		g_vulkan->renderFinishedSemaphores[g_vulkan->currentFrame],
+	};
+
+	VkPipelineStageFlags waitStages[] = {
+		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+	};
+
+	VkSubmitInfo submitInfo			= {};
+	submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.waitSemaphoreCount	= MEED_ARRAY_SIZE(waitSemaphores);
+	submitInfo.pWaitSemaphores		= waitSemaphores;
+	submitInfo.pWaitDstStageMask	= waitStages;
+	submitInfo.commandBufferCount	= 1;
+	submitInfo.pCommandBuffers		= &g_vulkan->graphicsCommandBuffers[g_vulkan->currentFrame];
+	submitInfo.signalSemaphoreCount = MEED_ARRAY_SIZE(signalSemaphores);
+	submitInfo.pSignalSemaphores	= signalSemaphores;
+
+	VK_ASSERT(vkQueueSubmit(g_vulkan->graphicsQueue, 1, &submitInfo, g_vulkan->inFlightFences[g_vulkan->currentFrame]));
+}
+
+void meedRenderPresent()
+{
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->presentQueue != MEED_NULL);
+
+	VkSemaphore waitSemaphores[] = {
+		g_vulkan->renderFinishedSemaphores[g_vulkan->currentFrame],
+	};
+
+	VkPresentInfoKHR presentInfo   = {};
+	presentInfo.sType			   = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfo.waitSemaphoreCount = MEED_ARRAY_SIZE(waitSemaphores);
+	presentInfo.pWaitSemaphores	   = waitSemaphores;
+	presentInfo.swapchainCount	   = 1;
+	presentInfo.pSwapchains		   = &g_vulkan->swapchain;
+	presentInfo.pImageIndices	   = &g_vulkan->imageIndex;
+
+	VK_ASSERT(vkQueuePresentKHR(g_vulkan->presentQueue, &presentInfo));
+
+	g_vulkan->currentFrame = (g_vulkan->currentFrame + 1) % FRAME_IN_FLIGHT_COUNT;
+}
+
+static void transitionImageLayout(VkImage			   image,
+								  VkImageLayout		   oldLayout,
+								  VkImageLayout		   newLayout,
+								  VkAccessFlags		   srcAccessMask,
+								  VkAccessFlags		   dstAccessMask,
+								  VkPipelineStageFlags srcStage,
+								  VkPipelineStageFlags dstStage)
+{
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->graphicsCommandBuffers != MEED_NULL);
+
+	VkCommandBuffer commandBuffer = g_vulkan->graphicsCommandBuffers[g_vulkan->currentFrame];
+
+	VkImageMemoryBarrier barrier			= {};
+	barrier.sType							= VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.oldLayout						= oldLayout;
+	barrier.newLayout						= newLayout;
+	barrier.srcAccessMask					= srcAccessMask;
+	barrier.dstAccessMask					= dstAccessMask;
+	barrier.srcQueueFamilyIndex				= VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex				= VK_QUEUE_FAMILY_IGNORED;
+	barrier.image							= image;
+	barrier.subresourceRange.aspectMask		= VK_IMAGE_ASPECT_COLOR_BIT;
+	barrier.subresourceRange.baseMipLevel	= 0;
+	barrier.subresourceRange.levelCount		= 1;
+	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.subresourceRange.layerCount		= 1;
+
+	vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, MEED_NULL, 0, MEED_NULL, 1, &barrier);
+}
+
+void meedWaitIdle()
+{
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->device != MEED_NULL);
+
+	vkDeviceWaitIdle(g_vulkan->device);
 }
 
 #endif // MEED_USE_VULKAN

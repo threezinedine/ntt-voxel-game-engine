@@ -30,6 +30,13 @@ struct MEEDPipeline
 struct MEEDPipeline* meedPipelineCreate(const char* vertexShaderPath, const char* fragmentShaderPath);
 
 /**
+ * @brief Binds the specified render pipeline for use in rendering.
+ *
+ * @param pPipeline Pointer to the MEEDPipeline to use.
+ */
+void meedPipelineUse(struct MEEDPipeline* pPipeline);
+
+/**
  * @brief Destroys the specified render pipeline and releases its resources.
  *
  * @param pPipeline Pointer to the MEEDPipeline to destroy.
