@@ -9,7 +9,8 @@
             ],
             "defines": [
                 "{{ PLATFORM_DEFINE }}",
-                "MEED_DEBUG"
+                "MEED_DEBUG",
+                "MEED_USE_VULKAN"
             ],
             "compilerPath": "{{ COMPILER_PATH }}",
             "cStandard": "c17",

@@ -1,3 +1,5 @@
+#if MEED_USE_VULKAN
+
 #include "MEEDEngine/modules/release_stack/release_stack.h"
 #include "MEEDEngine/modules/render/renderer.h"
 #include "MEEDEngine/platforms/platforms.h"
@@ -9,6 +11,7 @@ b8 s_isInitialized = MEED_FALSE;
 static const char* instanceExtensions[] = {
 	"VK_KHR_surface",
 	"VK_KHR_xcb_surface",
+	"VK_KHR_xlib_surface",
 	"VK_EXT_debug_utils",
 };
 
@@ -22,14 +25,28 @@ static const char* layers[] = {
 #endif
 };
 
+#define NULL_GRAPHICS_FAMILY ((i32)(-1))
+
+struct QueueFamilyIndices
+{
+	i32 graphicsFamily;
+	i32 presentFamily;
+	i32 computeFamily;
+	i32 transferFamily;
+};
+
 /// @brief The context of the Vulkan renderer.
 struct MEEDVulkan
 {
+	struct MEEDWindowData* pWindowData;
+
 	VkInstance instance;
 #if MEED_DEBUG
 	VkDebugUtilsMessengerEXT debugMessenger;
 #endif
-	VkPhysicalDevice physicalDevice;
+	VkPhysicalDevice		  physicalDevice;
+	VkSurfaceKHR			  surface;
+	struct QueueFamilyIndices queueFamilies; ///< The queue family indices for the selected physical device
 };
 
 struct MEEDVulkan* g_vulkan = MEED_NULL; // Global Vulkan instance
@@ -41,26 +58,38 @@ static void createVulkanInstance();
 static void createValidationLayers();
 #endif
 static void choosePhysicalDevice();
+static void createSurface();
+static void getQueueFamilyIndices();
 
 static void deleteGlobalVulkanInstance(void*);
 
-void meedRenderInitialize()
+void meedRenderInitialize(struct MEEDWindowData* pWindowData)
 {
 	MEED_ASSERT_MSG(!s_isInitialized, "Rendering module is already initialized.");
+	MEED_ASSERT(pWindowData != MEED_NULL);
 	MEED_ASSERT(g_vulkan == MEED_NULL);
 	MEED_ASSERT(s_releaseStack == MEED_NULL);
 	// Implementation of rendering module initialization
-	meedWindowInitialize();
 	s_releaseStack = meedReleaseStackCreate();
 
 	g_vulkan = MEED_MALLOC(struct MEEDVulkan);
 	meedReleaseStackPush(s_releaseStack, MEED_NULL, deleteGlobalVulkanInstance);
+
+	// Setup initial values for Vulkan context
+	g_vulkan->pWindowData = pWindowData;
+
+	g_vulkan->queueFamilies.graphicsFamily = NULL_GRAPHICS_FAMILY;
+	g_vulkan->queueFamilies.presentFamily  = NULL_GRAPHICS_FAMILY;
+	g_vulkan->queueFamilies.computeFamily  = NULL_GRAPHICS_FAMILY;
+	g_vulkan->queueFamilies.transferFamily = NULL_GRAPHICS_FAMILY;
 
 	createVulkanInstance();
 #if MEED_DEBUG
 	createValidationLayers();
 #endif
 	choosePhysicalDevice();
+	createSurface();
+	getQueueFamilyIndices();
 
 	s_isInitialized = MEED_TRUE;
 }
@@ -82,7 +111,6 @@ void meedRenderShutdown()
 	// Implementation of rendering module shutdown
 
 	meedReleaseStackDestroy(s_releaseStack);
-	meedWindowShutdown();
 	s_isInitialized = MEED_FALSE;
 }
 
@@ -312,3 +340,92 @@ static u32 rateDevice(VkPhysicalDevice device)
 
 	return score;
 }
+
+static void deleteSurface(void*);
+static void createSurface()
+{
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->pWindowData != MEED_NULL);
+	MEED_ASSERT(g_vulkan->instance != MEED_NULL);
+	MEED_ASSERT(g_vulkan->physicalDevice != MEED_NULL);
+	MEED_ASSERT(g_vulkan->surface == MEED_NULL);
+	MEED_ASSERT(s_releaseStack != MEED_NULL);
+
+	VK_ASSERT(meedWindowCreateVulkanSurface(g_vulkan->pWindowData, g_vulkan->instance, &g_vulkan->surface));
+	meedReleaseStackPush(s_releaseStack, MEED_NULL, deleteSurface);
+};
+
+static void deleteSurface(void* pData)
+{
+	MEED_UNUSED(pData);
+
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->pWindowData != MEED_NULL);
+	MEED_ASSERT(g_vulkan->instance != MEED_NULL);
+	MEED_ASSERT(g_vulkan->surface != MEED_NULL);
+
+	meedWindowDestroyVulkanSurface(g_vulkan->pWindowData, g_vulkan->instance, g_vulkan->surface);
+}
+
+static void getQueueFamilyIndices()
+{
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->instance != MEED_NULL);
+	MEED_ASSERT(g_vulkan->physicalDevice != MEED_NULL);
+	MEED_ASSERT(g_vulkan->queueFamilies.graphicsFamily == NULL_GRAPHICS_FAMILY);
+	MEED_ASSERT(g_vulkan->queueFamilies.presentFamily == NULL_GRAPHICS_FAMILY);
+	MEED_ASSERT(g_vulkan->queueFamilies.computeFamily == NULL_GRAPHICS_FAMILY);
+	MEED_ASSERT(g_vulkan->queueFamilies.transferFamily == NULL_GRAPHICS_FAMILY);
+
+	u32 queueFamiliesCount = 0;
+	vkGetPhysicalDeviceQueueFamilyProperties(g_vulkan->physicalDevice, &queueFamiliesCount, MEED_NULL);
+	MEED_ASSERT_MSG(queueFamiliesCount > 0, "Failed to get queue family properties.");
+
+	VkQueueFamilyProperties* pQueueFamilies = MEED_MALLOC_ARRAY(VkQueueFamilyProperties, queueFamiliesCount);
+	vkGetPhysicalDeviceQueueFamilyProperties(g_vulkan->physicalDevice, &queueFamiliesCount, pQueueFamilies);
+
+	for (i32 queueFamilyIndex = 0; queueFamilyIndex < queueFamiliesCount; ++queueFamilyIndex)
+	{
+		VkQueueFamilyProperties currentFamily = pQueueFamilies[queueFamilyIndex];
+
+		if (g_vulkan->queueFamilies.graphicsFamily == NULL_GRAPHICS_FAMILY &&
+			(currentFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT))
+		{
+			g_vulkan->queueFamilies.graphicsFamily = queueFamilyIndex;
+		}
+
+		if (g_vulkan->queueFamilies.computeFamily == NULL_GRAPHICS_FAMILY &&
+			(currentFamily.queueFlags & VK_QUEUE_COMPUTE_BIT))
+		{
+			g_vulkan->queueFamilies.computeFamily = queueFamilyIndex;
+		}
+
+		if (g_vulkan->queueFamilies.transferFamily == NULL_GRAPHICS_FAMILY &&
+			(currentFamily.queueFlags & VK_QUEUE_TRANSFER_BIT))
+		{
+			g_vulkan->queueFamilies.transferFamily = queueFamilyIndex;
+		}
+
+		if (g_vulkan->queueFamilies.presentFamily == NULL_GRAPHICS_FAMILY)
+		{
+			VkBool32 presentSupport = VK_FALSE;
+			vkGetPhysicalDeviceSurfaceSupportKHR(
+				g_vulkan->physicalDevice, queueFamilyIndex, g_vulkan->surface, &presentSupport);
+
+			if (presentSupport)
+			{
+				g_vulkan->queueFamilies.presentFamily = queueFamilyIndex;
+			}
+		}
+	}
+
+	MEED_ASSERT_MSG(g_vulkan->queueFamilies.graphicsFamily != NULL_GRAPHICS_FAMILY,
+					"Failed to find a graphics queue family.");
+
+	MEED_ASSERT_MSG(g_vulkan->queueFamilies.presentFamily != NULL_GRAPHICS_FAMILY,
+					"Failed to find a present queue family.");
+
+	MEED_FREE_ARRAY(pQueueFamilies, VkQueueFamilyProperties, queueFamiliesCount);
+}
+
+#endif // MEED_USE_VULKAN

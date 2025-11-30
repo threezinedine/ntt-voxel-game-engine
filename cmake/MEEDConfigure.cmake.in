@@ -20,6 +20,14 @@ endmacro()
 
 macro(MEEDOption OPTION DEFAULT_VALUE)
     option(${OPTION} "Enable ${OPTION}" ${DEFAULT_VALUE})
+
+    if (${OPTION} STREQUAL "ON")
+        list(APPEND COMMON_DEFINITIONS ${OPTION}=1)
+    elseif (${OPTION} STREQUAL "OFF")
+        list(APPEND COMMON_DEFINITIONS ${OPTION}=0)
+    else()
+        list(APPEND COMMON_DEFINITIONS ${OPTION}="${${OPTION}}")
+    endif()
 endmacro()
 
 macro(MEEDSetup)
@@ -28,10 +36,11 @@ macro(MEEDSetup)
     set(CMAKE_MODULE_DIR "{{ BASE_DIR }}/cmake")
 
     MEEDOption(CMAKE_BUILD_TYPE Debug)
+    MEEDOption(MEED_USE_VULKAN ON)
 
     MEEDDetectPlatform()
 
-    set(COMMON_DEFINITIONS "${PLATFORM_DEFINITION}")
+    list(APPEND COMMON_DEFINITIONS "${PLATFORM_DEFINITION}")
 
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         list(APPEND COMMON_DEFINITIONS MEED_DEBUG)

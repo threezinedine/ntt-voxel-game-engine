@@ -3,9 +3,10 @@
 int main(void)
 {
 	meedPlatformMemoryInitialize();
-	meedRenderInitialize();
-
+	meedWindowInitialize();
 	struct MEEDWindowData* pWindow = meedWindowCreate(1600, 1400, "MEEDEngine Vulkan Renderer Example");
+
+	meedRenderInitialize(pWindow);
 
 	while (!pWindow->shouldClose)
 	{
@@ -16,6 +17,7 @@ int main(void)
 	meedWindowDestroy(pWindow);
 
 	meedRenderShutdown();
+	meedWindowShutdown();
 	meedPlatformMemoryShutdown();
 	return 0;
 }

@@ -5,6 +5,10 @@
 extern "C" {
 #endif
 
+#if MEED_USE_VULKAN
+#include <vulkan/vulkan.h>
+#endif
+
 /**
  * @file window.h
  * The utilities for managing the windowing system inside the `MEEDEngine`.
@@ -71,6 +75,26 @@ void meedWindowInitialize();
  * @return A pointer to the created window data.
  */
 struct MEEDWindowData* meedWindowCreate(u32 width, u32 height, const char* title);
+
+#if MEED_USE_VULKAN
+/**
+ * Get the Vulkan surface for the specified window.
+ *
+ * @param pWindowData A pointer to the window data.
+ * @param instance The Vulkan instance.
+ * @param pSurface A pointer to store the created Vulkan surface.
+ */
+VkResult meedWindowCreateVulkanSurface(struct MEEDWindowData* pWindowData, VkInstance instance, VkSurfaceKHR* pSurface);
+
+/**
+ * Destroy the Vulkan surface associated with the specified window.
+ *
+ * @param pWindowData A pointer to the window data.
+ * @param instance The Vulkan instance.
+ * @param surface The Vulkan surface to destroy.
+ */
+void meedWindowDestroyVulkanSurface(struct MEEDWindowData* pWindowData, VkInstance instance, VkSurfaceKHR surface);
+#endif
 
 /**
  * Poll for window events (e.g., input, close events).

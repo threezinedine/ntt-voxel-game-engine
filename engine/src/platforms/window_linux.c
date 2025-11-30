@@ -4,6 +4,10 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#if MEED_USE_VULKAN
+#include <vulkan/vulkan_xlib.h>
+#endif
+
 /**
  * Internal structure to hold Linux-specific window data.
  */
@@ -104,6 +108,31 @@ struct MEEDWindowEvent meedWindowPollEvents(struct MEEDWindowData* pWindowData)
 
 	return windowEvent;
 }
+
+#if MEED_USE_VULKAN
+VkResult meedWindowCreateVulkanSurface(struct MEEDWindowData* pWindowData, VkInstance instance, VkSurfaceKHR* pSurface)
+{
+	MEED_WINDOW_UTILS_ASSERTION();
+
+	struct LinuxWindowData* pLinuxData = (struct LinuxWindowData*)pWindowData->pInternal;
+
+	VkSurfaceKHR			   surface;
+	VkXlibSurfaceCreateInfoKHR createInfo = {};
+	createInfo.sType					  = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
+	createInfo.dpy						  = pLinuxData->pDisplay;
+	createInfo.window					  = pLinuxData->window;
+
+	return vkCreateXlibSurfaceKHR(instance, &createInfo, MEED_NULL, pSurface);
+}
+
+void meedWindowDestroyVulkanSurface(struct MEEDWindowData* pWindowData, VkInstance instance, VkSurfaceKHR surface)
+{
+	MEED_WINDOW_UTILS_ASSERTION();
+
+	vkDestroySurfaceKHR(instance, surface, MEED_NULL);
+}
+
+#endif
 
 void meedWindowDestroy(struct MEEDWindowData* pWindowData)
 {
