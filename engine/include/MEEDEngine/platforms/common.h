@@ -121,9 +121,10 @@ static_assert(sizeof(b32) == 4, "b32 size is not 4 bytes");
 
 typedef MEED_BINDING size_t meedSize;
 
-#define MEED_NULL  ((void*)0)
-#define MEED_TRUE  (b8)(1)
-#define MEED_FALSE (b8)(0)
+#define MEED_NULL ((void*)0)
+
+#define MEED_TRUE  ((b8)1)
+#define MEED_FALSE ((b8)0)
 
 #define MEED_ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 

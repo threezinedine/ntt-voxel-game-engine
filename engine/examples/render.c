@@ -8,9 +8,17 @@ int main(void)
 
 	meedRenderInitialize(pWindow);
 
+#if MEED_USE_VULKAN
 	struct MEEDPipeline* pPipeline =
 		meedPipelineCreate(MEED_STRINGIFY(PROJECT_BASE_DIR) "/engine/build/debug/shaders/triangle.vert.spv",
 						   MEED_STRINGIFY(PROJECT_BASE_DIR) "/engine/build/debug/shaders/triangle.frag.spv");
+#elif MEED_USE_OPENGL
+	struct MEEDPipeline* pPipeline =
+		meedPipelineCreate(MEED_STRINGIFY(PROJECT_BASE_DIR) "/engine/assets/shaders/opengl/triangle.vert",
+						   MEED_STRINGIFY(PROJECT_BASE_DIR) "/engine/assets/shaders/opengl/triangle.frag");
+#else
+#error "No rendering backend selected."
+#endif
 
 	while (!pWindow->shouldClose)
 	{

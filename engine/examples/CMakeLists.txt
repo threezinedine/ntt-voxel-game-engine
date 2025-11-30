@@ -21,4 +21,10 @@ foreach (EXAMPLE_SOURCE ${EXAMPLE_SOURCES})
         PUBLIC
         MEEDEngine
     )
+
+    target_compile_definitions(
+        ${EXAMPLE_FILE_PROJECT}
+        PUBLIC 
+        ${COMMON_DEFINITIONS}
+    )
 endforeach()

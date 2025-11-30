@@ -1,5 +1,6 @@
 import os
 import json
+import shutil
 from typing import Any
 from ..log import logger
 from .utils import RunCommand
@@ -52,6 +53,7 @@ def BuildCProject(
     project: str = "",
     web: bool = False,
     type: str = "debug",
+    force: bool = False,
     **kwargs: Any,
 ) -> None:
     """
@@ -66,7 +68,25 @@ def BuildCProject(
     if web:
         BuildEngineWebLib(project=project, **kwargs)
     else:
+        if force:
+            buildDir = os.path.join(SYSTEM.BaseDir, project, "build", type)
+            if os.path.exists(buildDir):
+                logger.info(
+                    f'Removing existing build directory at "{buildDir}" for reload...'
+                )
+
+                shutil.rmtree(buildDir)
+
         additionalOptions = ""
+
+        configFile = os.path.join(SYSTEM.BaseDir, project, f"{type}.cfg")
+
+        if os.path.exists(configFile):
+            with open(configFile, "r") as cfgFile:
+                for line in cfgFile:
+                    line = line.strip()
+                    if line and not line.startswith("#"):
+                        additionalOptions += f" -D{line}"
 
         if SYSTEM.IsWindowsPlatform:
             additionalOptions = "-G Visual Studio 17 2022"

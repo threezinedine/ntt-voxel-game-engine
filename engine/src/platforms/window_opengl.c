@@ -3,7 +3,7 @@
 #include "MEEDEngine/platforms/common.h"
 #include "MEEDEngine/platforms/window.h"
 // clang-format off
-#include <glad/glad.h>
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 // clang-format on
 
@@ -43,8 +43,8 @@ struct MEEDWindowData* meedWindowCreate(u32 width, u32 height, const char* title
 	meedPlatformMemorySet(pWindowData->pInternal, 0, sizeof(struct OpenGLWindowData));
 	struct OpenGLWindowData* pOpenGLData = (struct OpenGLWindowData*)pWindowData->pInternal;
 
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	pOpenGLData->pWindow = glfwCreateWindow((i32)width, (i32)height, title, NULL, NULL);
@@ -52,8 +52,8 @@ struct MEEDWindowData* meedWindowCreate(u32 width, u32 height, const char* title
 
 	glfwMakeContextCurrent(pOpenGLData->pWindow);
 
-	i32 gladError = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-	MEED_ASSERT_MSG(gladError != 0, "Failed to initialize GLAD with error code: %d", gladError);
+	i32 glewError = glewInit();
+	MEED_ASSERT_MSG(glewError == GLEW_OK, "Failed to initialize GLEW with error code: %d", glewError);
 
 	struct MEEDPlatformConsoleConfig config = {};
 	config.color							= MEED_CONSOLE_COLOR_GREEN;
@@ -61,6 +61,12 @@ struct MEEDWindowData* meedWindowCreate(u32 width, u32 height, const char* title
 	meedPlatformFPrint("OpenGL Version: %s\n", glGetString(GL_VERSION));
 	config.color = MEED_CONSOLE_COLOR_RESET;
 	meedPlatformSetConsoleConfig(config);
+
+	glfwSwapInterval(1); // Enable V-Sync
+
+	i32 framebufferWidth, framebufferHeight;
+	glfwGetFramebufferSize(pOpenGLData->pWindow, &framebufferWidth, &framebufferHeight);
+	glViewport(0, 0, framebufferWidth, framebufferHeight);
 
 	return pWindowData;
 }
@@ -74,6 +80,8 @@ struct MEEDWindowEvent meedWindowPollEvents(struct MEEDWindowData* pWindowData)
 
 	glfwPollEvents();
 	pWindowData->shouldClose = glfwWindowShouldClose(pOpenGLData->pWindow) ? MEED_TRUE : MEED_FALSE;
+
+	return (struct MEEDWindowEvent){MEED_WINDOW_EVENT_TYPE_NONE};
 }
 
 void meedWindowDestroy(struct MEEDWindowData* pWindowData)

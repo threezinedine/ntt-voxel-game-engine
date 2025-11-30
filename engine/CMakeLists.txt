@@ -78,8 +78,8 @@ if (MEED_USE_VULKAN)
     file(
         GLOB 
         VULKAN_SHADER_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders/*.vert
-        ${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders/*.frag
+        ${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders/vulkan/*.vert
+        ${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders/vulkan/*.frag
     )
 
     foreach(SHADER_FILE ${VULKAN_SHADER_FILES})
@@ -97,11 +97,11 @@ if (MEED_USE_VULKAN)
 endif()
 
 if (MEED_USE_OPENGL)
-    MEEDFindPackage(MEEDGLFW "Dependencies")
+    MEEDFindPackage(MEEDGlfw "Dependencies")
     target_link_libraries(
         ${PROJECT_NAME}
         PUBLIC
-        MEEDGLFW
+        MEEDGlfw
     )
 endif()
 

@@ -1,14 +1,18 @@
 [
-  {
-    "name": "googletest",
-    "url": "https://github.com/google/googletest.git"
-  },
-  {
-    "name": "pybind11",
-    "url": "https://github.com/pybind/pybind11.git"
-  },
-  {
-    "name": "glfw",
-    "url": "https://github.com/glfw/glfw.git"
-  }
+    {
+        "name": "googletest",
+        "url": "https://github.com/google/googletest.git"
+    },
+    {
+        "name": "pybind11",
+        "url": "https://github.com/pybind/pybind11.git"
+    },
+    {
+        "name": "glfw",
+        "url": "https://github.com/glfw/glfw.git"
+    },
+    {
+        "name": "glew",
+        "url": "https://github.com/Perlmint/glew-cmake.git"
+    }
 ]
