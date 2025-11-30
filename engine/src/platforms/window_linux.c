@@ -80,6 +80,15 @@ struct MEEDWindowData* meedWindowCreate(u32 width, u32 height, const char* title
 	XMapWindow(pLinuxData->pDisplay, pLinuxData->window);
 	XStoreName(pLinuxData->pDisplay, pLinuxData->window, title);
 
+	XSizeHints sizeHints;
+	meedPlatformMemorySet(&sizeHints, 0, sizeof(XSizeHints));
+	sizeHints.flags		 = PMinSize | PMaxSize;
+	sizeHints.min_width	 = width;
+	sizeHints.min_height = height;
+	sizeHints.max_width	 = width;
+	sizeHints.max_height = height;
+	XSetWMNormalHints(pLinuxData->pDisplay, pLinuxData->window, &sizeHints);
+
 	Atom wmDeleteMessage = XInternAtom(pLinuxData->pDisplay, "WM_DELETE_WINDOW", False);
 	XSetWMProtocols(pLinuxData->pDisplay, pLinuxData->window, &wmDeleteMessage, 1);
 
