@@ -13,7 +13,7 @@ struct VulkanShader
 
 #define NULL_GRAPHICS_FAMILY ((i32)(-1))
 
-#define FRAME_IN_FLIGHT_COUNT 2
+#define FRAME_IN_FLIGHT_COUNT 3
 
 /**
  * @brief The queue family indices for the selected physical device.

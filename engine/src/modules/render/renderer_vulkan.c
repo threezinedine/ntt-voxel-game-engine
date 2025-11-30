@@ -588,13 +588,18 @@ static void choosePresentMode()
 	VK_ASSERT(vkGetPhysicalDeviceSurfacePresentModesKHR(
 		g_vulkan->physicalDevice, g_vulkan->surface, &presentModesCount, pPresentModes));
 
+	g_vulkan->presentMode = VK_PRESENT_MODE_FIFO_KHR; // Default present mode
+
 	for (u32 i = 0u; i < presentModesCount; ++i)
 	{
 		if (pPresentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR)
 		{
 			g_vulkan->presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
-			MEED_FREE_ARRAY(pPresentModes, VkPresentModeKHR, presentModesCount);
-			return;
+			break;
+		}
+		if (pPresentModes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR)
+		{
+			g_vulkan->presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 		}
 	}
 
