@@ -13,6 +13,8 @@ struct VulkanShader
 
 #define NULL_GRAPHICS_FAMILY ((i32)(-1))
 
+#define FRAME_IN_FLIGHT_COUNT 2
+
 /**
  * @brief The queue family indices for the selected physical device.
  */
@@ -68,6 +70,11 @@ struct MEEDVulkan
 
 	VkCommandBuffer graphicsCommandBuffer;
 	VkCommandBuffer presentCommandBuffer;
+
+	u32			currentFrame;
+	VkFence		inFlightFences[FRAME_IN_FLIGHT_COUNT];
+	VkSemaphore imageAvailableSemaphores[FRAME_IN_FLIGHT_COUNT];
+	VkSemaphore renderFinishedSemaphores[FRAME_IN_FLIGHT_COUNT];
 };
 
 extern struct MEEDVulkan* g_vulkan; // Global Vulkan instance

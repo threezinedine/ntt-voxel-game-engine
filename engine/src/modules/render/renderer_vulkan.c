@@ -45,6 +45,7 @@ static void createSwapchainImageViews();
 static void createRenderPass();
 static void createCommandPools();
 static void allocateCommandBuffers();
+static void createSyncObjects();
 
 static void deleteGlobalVulkanInstance(void*);
 
@@ -85,6 +86,7 @@ void meedRenderInitialize(struct MEEDWindowData* pWindowData)
 	createRenderPass();
 	createCommandPools();
 	allocateCommandBuffers();
+	createSyncObjects();
 
 	s_isInitialized = MEED_TRUE;
 }
@@ -941,6 +943,54 @@ static void freeCommandBuffers(void* pData)
 	MEED_ASSERT(g_vulkan->presentCommandBuffer != MEED_NULL);
 	vkFreeCommandBuffers(g_vulkan->device, g_vulkan->presentCommandPool, 1, &g_vulkan->presentCommandBuffer);
 	g_vulkan->presentCommandBuffer = MEED_NULL;
+}
+
+static void deleteSyncObjects(void*);
+static void createSyncObjects()
+{
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->device != MEED_NULL);
+
+	for (u32 frameIndex = 0u; frameIndex < FRAME_IN_FLIGHT_COUNT; ++frameIndex)
+	{
+		VkSemaphoreCreateInfo renderFinishedSemaphore = {};
+		renderFinishedSemaphore.sType				  = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		VK_ASSERT(vkCreateSemaphore(
+			g_vulkan->device, &renderFinishedSemaphore, MEED_NULL, &g_vulkan->renderFinishedSemaphores[frameIndex]));
+
+		VkSemaphoreCreateInfo imageAvailableSemaphore = {};
+		imageAvailableSemaphore.sType				  = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+		VK_ASSERT(vkCreateSemaphore(
+			g_vulkan->device, &imageAvailableSemaphore, MEED_NULL, &g_vulkan->imageAvailableSemaphores[frameIndex]));
+
+		VkFenceCreateInfo inFlightFenceCreateInfo = {};
+		inFlightFenceCreateInfo.sType			  = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		inFlightFenceCreateInfo.flags			  = VK_FENCE_CREATE_SIGNALED_BIT;
+
+		VK_ASSERT(vkCreateFence(
+			g_vulkan->device, &inFlightFenceCreateInfo, MEED_NULL, &g_vulkan->inFlightFences[frameIndex]));
+	}
+
+	meedReleaseStackPush(s_releaseStack, MEED_NULL, deleteSyncObjects);
+}
+
+static void deleteSyncObjects(void* pData)
+{
+	MEED_UNUSED(pData);
+	MEED_ASSERT(g_vulkan != MEED_NULL);
+	MEED_ASSERT(g_vulkan->device != MEED_NULL);
+
+	for (u32 frameIndex = 0u; frameIndex < FRAME_IN_FLIGHT_COUNT; ++frameIndex)
+	{
+		MEED_ASSERT(g_vulkan->inFlightFences[frameIndex] != MEED_NULL);
+		MEED_ASSERT(g_vulkan->renderFinishedSemaphores[frameIndex] != MEED_NULL);
+		MEED_ASSERT(g_vulkan->imageAvailableSemaphores[frameIndex] != MEED_NULL);
+
+		vkDestroyFence(g_vulkan->device, g_vulkan->inFlightFences[frameIndex], MEED_NULL);
+		vkDestroySemaphore(g_vulkan->device, g_vulkan->renderFinishedSemaphores[frameIndex], MEED_NULL);
+		vkDestroySemaphore(g_vulkan->device, g_vulkan->imageAvailableSemaphores[frameIndex], MEED_NULL);
+	}
 }
 
 #endif // MEED_USE_VULKAN
