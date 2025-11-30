@@ -24,6 +24,15 @@ struct QueueFamilyIndices
 	i32 transferFamily;
 };
 
+/// @brief The Vulkan-specific implementation of the render pipeline.
+struct VulkanPipeline
+{
+	struct MEEDShader* pVertexShader;
+	struct MEEDShader* pFragmentShader;
+	VkPipelineLayout   layout;
+	VkPipeline		   pipeline;
+};
+
 /// @brief The context of the Vulkan renderer.
 struct MEEDVulkan
 {
@@ -54,6 +63,8 @@ struct MEEDVulkan
 
 	VkRenderPass renderPass;
 };
+
+extern struct MEEDVulkan* g_vulkan; // Global Vulkan instance
 
 #define VK_ASSERT(call)                                                                                                \
 	do                                                                                                                 \
