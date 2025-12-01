@@ -26,4 +26,8 @@ def ClearText(content: str) -> str:
             content = content[: i + 1]
             break
 
+    content = content.replace("\t", " ")
+    content = content.replace("\n", " ")
+    content = content.replace(" ", "")
+
     return content

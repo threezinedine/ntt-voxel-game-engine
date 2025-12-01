@@ -21,7 +21,9 @@ struct __attribute__((annotate("binding"))) Point {
 
     expected = """
 class Point:
+
     x: int
+
     y: int
 """
 
@@ -70,14 +72,54 @@ class Point:
     \"\"\"
     This is a 2D point structure
     \"\"\"
+
     x: int
     \"\"\"
     X coordinate
     \"\"\"
+
     y: int
     \"\"\"
     Y coordinate
     \"\"\"
+"""
+
+    AssertBindingResult(expected, result)
+
+
+def test_generate_multiple_structs() -> None:
+    binding = Binding(
+        template="autogen/templates/pyi/struct.j2",
+    )
+
+    result, _ = GenerateBindings(
+        binding,
+        """
+struct __attribute__((annotate("binding"))) Point {
+    int x;
+    int y;
+};
+
+struct __attribute__((annotate("binding"))) Rectangle {
+    struct Point top_left;
+    struct Point bottom_right;
+};
+    """,
+    )
+
+    expected = """
+class Point:
+
+    x: int
+
+    y: int  
+
+
+class Rectangle:
+
+    top_left: Point
+
+    bottom_right: Point
 """
 
     AssertBindingResult(expected, result)

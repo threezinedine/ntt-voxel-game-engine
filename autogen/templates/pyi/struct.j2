@@ -1,10 +1,10 @@
 {% for struct in structs-%}
 {% if "binding" in struct.annotations-%}
 class {{ struct.name }}:
-{{ convertRawCCommentToPythonDocstring(struct)-}}
-    {% for field in struct.fields-%}
-    {{ field.name }}: {{ cTypeConvert(field.type) }}
-{{ convertRawCCommentToPythonDocstring(field)-}}
-    {% endfor-%}
+{{ convertRawCCommentToPythonDocstring(struct) }}
+{% for field in struct.fields-%}
+    {{ '\t' }}{{ field.name }}: {{ cTypeConvert(field.type) }}
+{{ convertRawCCommentToPythonDocstring(field) }}
+{% endfor-%}
 {% endif-%}
 {% endfor-%}

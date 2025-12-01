@@ -8,7 +8,6 @@ from jinja2 import FileSystemLoader
 from analyze.py_function import PyFunction, PyObject
 from utils import IsFileModified, logger, AllDependenciesFiles
 
-TAB_STRING = "    "
 parser: Parser | None = None
 
 
@@ -119,7 +118,7 @@ def _ConvertRawCCommentToPythonDocstring(pyObject: PyObject) -> str:
     assert pyObject is not None, "pyObject cannot be None."
 
     if pyObject.rawComent is None:
-        return f"{TAB_STRING}"
+        return f""
 
     lines = pyObject.rawComent.splitlines()
     transferredLines: list[str] = []
@@ -142,11 +141,7 @@ def _ConvertRawCCommentToPythonDocstring(pyObject: PyObject) -> str:
         cutLine = cutLine.replace("@", ":")
         transferredLines.append(cutLine)
 
-    return (
-        f'{TAB_STRING}"""\n{TAB_STRING}'
-        + f"\n{TAB_STRING}".join(transferredLines)
-        + f'\n{TAB_STRING}"""\n{TAB_STRING}'
-    )
+    return f'\t"""\n\t' + f"\n\t".join(transferredLines) + f'\n\t"""\n'
 
 
 def _ConvertRawCCommentToPythonComment(pyObject: PyObject) -> str:
