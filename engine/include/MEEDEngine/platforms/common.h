@@ -13,6 +13,10 @@
 #define debugBreak() __builtin_trap()
 #endif
 
+#if PLATFORM_IS_WEB
+#include <emscripten/emscripten.h>
+#endif
+
 #if MEED_DEBUG
 #define MEED_ASSERT(expr)                                                                                              \
 	do                                                                                                                 \

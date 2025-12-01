@@ -73,6 +73,12 @@ def GenerateTemplate(template: Template) -> tuple[str, list[str]]:
         renderedContent = jinjaTemplate.render(**TEMPLATE_DATA)
 
     for outputFile, fullOutputPath in zip(outputFiles, fullOutputPaths):
+        if template.noReload and os.path.exists(fullOutputPath):
+            logger.debug(
+                f'Skipping generation of "{outputFile}" from template "{template.file}" as noReload is set and the output file already exists.'
+            )
+            continue
+
         os.makedirs(os.path.dirname(fullOutputPath), exist_ok=True)
 
         with open(fullOutputPath, "w") as f:

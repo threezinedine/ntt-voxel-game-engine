@@ -31,16 +31,16 @@ class Args:
             help="Type of run (debug or release)",
         )
 
-        subparser = parser.add_subparsers(dest="command", required=True)
-
-        autogenParser = subparser.add_parser("autogen", help="Run the autogen process")
-
-        autogenParser.add_argument(
+        parser.add_argument(
             "--reload",
             "-r",
             action="store_true",
-            help="Reload all templates, ignoring cache",
+            help="reload the project before running",
         )
+
+        subparser = parser.add_subparsers(dest="command", required=True)
+
+        subparser.add_parser("autogen", help="Run the autogen process")
 
         buildParser = subparser.add_parser("build", help="Build the project")
         buildParser.add_argument(

@@ -1,7 +1,12 @@
 #if MEED_USE_OPENGL
 
 // clang-format off
+#if !PLATFORM_IS_WEB
 #include <glad/glad.h>
+#else 
+#define GL_GLEXT_PROTOTYPES
+#define EGL_EGLEXT_PROTOTYPES
+#endif
 #include <GLFW/glfw3.h>
 // clang-format on
 

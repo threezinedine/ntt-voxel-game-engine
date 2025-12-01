@@ -18,6 +18,14 @@ void meedPlatformFPrint(const char* format, ...)
 	va_end(args);
 }
 
+void meedPlatformBufferedPrint(char* buffer, meedSize length, char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	vsnprintf(buffer, length, format, args);
+	va_end(args);
+}
+
 void meedPlatformPrint(const char* str)
 {
 	printf("%s", str);

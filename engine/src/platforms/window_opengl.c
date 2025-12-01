@@ -2,8 +2,11 @@
 
 #include "MEEDEngine/platforms/common.h"
 #include "MEEDEngine/platforms/window.h"
+
 // clang-format off
+#if !PLATFORM_IS_WEB
 #include <glad/glad.h>
+#endif
 #include <GLFW/glfw3.h>
 // clang-format on
 
@@ -22,7 +25,7 @@ void meedWindowInitialize()
 	MEED_ASSERT(s_isInitialized == MEED_FALSE);
 
 	i32 glfwError = glfwInit();
-	MEED_ASSERT_MSG(glfwError == GLFW_TRUE, "Failed to initialize GLFW with error code: %d", glfwError);
+	MEED_ASSERT_MSG(glfwInit() == GLFW_TRUE, "Failed to initialize GLFW with error code: %d", glfwError);
 
 	s_isInitialized = MEED_TRUE;
 }
@@ -55,8 +58,9 @@ struct MEEDWindowData* meedWindowCreate(u32 width, u32 height, const char* title
 
 	glfwMakeContextCurrent(pOpenGLData->pWindow);
 
-	i32 gladError = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-	MEED_ASSERT_MSG(gladError == 1, "Failed to initialize GLAD");
+#if !PLATFORM_IS_WEB
+	MEED_ASSERT_MSG(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) == 1, "Failed to initialize GLAD");
+#endif
 
 	struct MEEDPlatformConsoleConfig config = {};
 	config.color							= MEED_CONSOLE_COLOR_GREEN;

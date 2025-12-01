@@ -66,6 +66,22 @@ target_link_libraries(
     ${PROJECT_LIBRARIES}
 )
 
+target_link_options(
+    ${PROJECT_NAME}
+    PUBLIC
+    ${COMMON_OPTIONS}
+)
+
+if (PLATFORM_IS_WEB)
+    target_link_options(
+        ${PROJECT_NAME}
+        PUBLIC
+        -sUSE_GLFW=3
+        -sUSE_WEBGL2=1
+        -sFULL_ES3=1
+    )
+endif()
+
 if (MEED_USE_VULKAN)
     MEEDFindPackage(MEEDVulkan "Dependencies")
     target_link_libraries(

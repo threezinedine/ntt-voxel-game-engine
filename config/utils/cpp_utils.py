@@ -54,9 +54,9 @@ def InstallCDependencies(
 
 def BuildCProject(
     project: str = "",
-    web: bool = False,
     type: str = "debug",
     force: bool = False,
+    reload: bool = False,
     **kwargs: Any,
 ) -> None:
     """
@@ -68,7 +68,7 @@ def BuildCProject(
         type (str): The build type, either 'debug' or 'release'. Defaults to 'debug'.
 
     """
-    if force:
+    if force or reload:
         buildDir = os.path.join(SYSTEM.BaseDir, project, "build", type)
         if os.path.exists(buildDir):
             logger.info(
@@ -83,9 +83,9 @@ def BuildCProject(
     if SYSTEM.IsWindowsPlatform:
         additionalOptions = "-G Visual Studio 17 2022"
 
-    if type.lower() == "release":
+    if type.lower() == "release" or type.lower() == "web":
         additionalOptions += " -DCMAKE_BUILD_TYPE=Release"
-    else:
+    elif type.lower() == "debug":
         additionalOptions += " -DCMAKE_BUILD_TYPE=Debug"
 
     prefix = ""
@@ -121,17 +121,17 @@ def ReadConfigFile(name: str, folder: str) -> str:
         for index, line in enumerate(content.splitlines()):
             line = line.strip()
 
-            if line == "":
+            if line == "" or line.startswith("//") or line.startswith("#"):
                 continue
 
             if re.match(r"^[A-Za-z0-9_\-]+=(.*)$", line):
                 additionalOptions += f" -D{line}"
                 continue
 
-            includeMatch = re.match(r"^#include<[A-Za-z0-9_\-]+.cfg>$", line)
+            includeMatch = re.match(r"^<[A-Za-z0-9_\-]+.cfg>$", line)
 
             if includeMatch:
-                includeFileName = line[9:-1]
+                includeFileName = line[1:-1]
                 logger.debug(
                     f'Including configuration file "{includeFileName}" from line {index + 1} in "{name}".'
                 )
@@ -238,6 +238,12 @@ def RunApplication(
     Arguments:
         type (str): The build type, either 'debug' or 'release'. Defaults to 'debug'.
     """
+    BuildCProject(**(kwargs | dict(project="app", type=type)))
+
+    if type == "web":
+        RunWebApplication(**kwargs)
+        return
+
     if SYSTEM.IsWindowsPlatform:
         appDir = os.path.join(
             SYSTEM.BaseDir,
@@ -258,8 +264,6 @@ def RunApplication(
             "Current platform is not supported for running the application."
         )
 
-    BuildCProject(**(kwargs | dict(project="app", type=type)))
-
     logger.debug(f"Application directory resolved to: {appDir}")
 
     logger.info(f"Running application...")
@@ -268,3 +272,25 @@ def RunApplication(
         RunCommand(f"MEEDApp.exe", cwd=appDir)
     elif SYSTEM.IsLinuxPlatform:
         RunCommand(f"./MEEDApp", cwd=appDir)
+
+
+def RunWebApplication(
+    port: int = 8080,
+    **kwargs: Any,
+) -> None:
+    """
+    Runs the web application using Emscripten.
+
+    Arguments:
+        None
+    """
+
+    appDir = os.path.join(
+        SYSTEM.BaseDir,
+        "app",
+        "public",
+    )
+
+    logger.info(f"Running web application on http://localhost:{port}...")
+
+    RunCommand(f"{SYSTEM.PythonCommand} server.py", cwd=appDir)

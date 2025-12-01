@@ -41,7 +41,8 @@
             "file": ".vscode/tasks.json.in"
         },
         {
-            "file": "config/conf.py.in"
+            "file": "config/conf.py.in",
+            "noReload": true
         },
         {
             "file": "editor/resources.qrc.in",
