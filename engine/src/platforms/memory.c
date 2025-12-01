@@ -161,23 +161,6 @@ void* mdMemorySet(void* pDest, u8 value, mdSize size)
 	return memset(pDest, value, size);
 }
 
-u32 mdGetStringLength(const char* str)
-{
-	MD_ASSERT(s_isInitialized == MD_TRUE);
-	MD_ASSERT(str != MD_NULL);
-
-	return strlen(str);
-}
-
-i32 mdStringCompare(const char* str1, const char* str2)
-{
-	MD_ASSERT(s_isInitialized == MD_TRUE);
-	MD_ASSERT(str1 != MD_NULL);
-	MD_ASSERT(str2 != MD_NULL);
-
-	return strcmp(str1, str2);
-}
-
 void mdMemoryShutdown()
 {
 	MD_ASSERT(s_isInitialized == MD_TRUE);
@@ -195,24 +178,13 @@ void mdMemoryShutdown()
 		snprintf(cmd, sizeof(cmd), "addr2line -e /proc/%d/exe -pif", s_pMemoryHead->threadId);
 		for (mdSize i = 0; i < s_pMemoryHead->framesCount; i++)
 		{
-#if 0
-			char syscom[1024];
-			snprintf(syscom, sizeof(syscom), "%s %p", cmd, s_pMemoryHead->frames[i]);
 			char** function = backtrace_symbols(&s_pMemoryHead->frames[i], 1);
 			mdPrint(function[0]);
 			mdPrint("\n");
-			system(syscom);
-#else
-			char** function = backtrace_symbols(&s_pMemoryHead->frames[i], 1);
-			mdPrint(function[0]);
-			mdPrint("\n");
-#endif
 		}
 		exit(139); // 139 is the exit code for segmentation fault.
 		config.color = MD_CONSOLE_COLOR_RESET;
 		mdSetConsoleConfig(config);
-#else
-		MD_UNTOUCHABLE();
 #endif
 	}
 
@@ -276,28 +248,6 @@ void* mdMemoryCopy(void* pDest, const void* pSrc, mdSize size)
 void* mdMemorySet(void* pDest, u8 value, mdSize size)
 {
 	return memset(pDest, value, size);
-}
-
-u32 mdGetStringLength(const char* str)
-{
-	MD_ASSERT(str != MD_NULL);
-
-	u32 length = 0;
-	while (str[length] != '\0')
-	{
-		length++;
-	}
-
-	return length;
-}
-
-i32 mdStringCompare(const char* str1, const char* str2)
-{
-	MD_ASSERT(s_isInitialized == MD_TRUE);
-	MD_ASSERT(str1 != MD_NULL);
-	MD_ASSERT(str2 != MD_NULL);
-
-	return strcmp(str1, str2);
 }
 
 void mdMemoryShutdown()
