@@ -416,8 +416,7 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 
-externals/*
-!externals/glad
+externals/
 
 *-dist/
 meed.code-workspace

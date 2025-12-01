@@ -10,5 +10,9 @@
     {
         "name": "glfw",
         "url": "https://github.com/glfw/glfw.git"
+    },
+    {
+        "name": "glad",
+        "url": "https://github.com/threezinedine/glad.git"
     }
 ]
