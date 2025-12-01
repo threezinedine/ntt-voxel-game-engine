@@ -3,7 +3,7 @@
 #include "MEEDEngine/platforms/common.h"
 #include "MEEDEngine/platforms/window.h"
 // clang-format off
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
 
@@ -55,8 +55,8 @@ struct MEEDWindowData* meedWindowCreate(u32 width, u32 height, const char* title
 
 	glfwMakeContextCurrent(pOpenGLData->pWindow);
 
-	i32 glewError = glewInit();
-	MEED_ASSERT_MSG(glewError == GLEW_OK, "Failed to initialize GLEW with error code: %d", glewError);
+	i32 gladError = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+	MEED_ASSERT_MSG(gladError == 1, "Failed to initialize GLAD");
 
 	struct MEEDPlatformConsoleConfig config = {};
 	config.color							= MEED_CONSOLE_COLOR_GREEN;

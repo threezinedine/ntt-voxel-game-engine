@@ -1,7 +1,7 @@
 #if MEED_USE_OPENGL
 
 // clang-format off
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
 

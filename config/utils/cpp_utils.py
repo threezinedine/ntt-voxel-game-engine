@@ -1,7 +1,10 @@
 import os
+import re
 import json
 import shutil
 from typing import Any
+
+from ..conf import VARIABLES
 from ..log import logger
 from .utils import RunCommand
 from ..system_info import SYSTEM
@@ -65,42 +68,82 @@ def BuildCProject(
         type (str): The build type, either 'debug' or 'release'. Defaults to 'debug'.
 
     """
-    if web:
-        BuildEngineWebLib(project=project, **kwargs)
+    if force:
+        buildDir = os.path.join(SYSTEM.BaseDir, project, "build", type)
+        if os.path.exists(buildDir):
+            logger.info(
+                f'Removing existing build directory at "{buildDir}" for reload...'
+            )
+
+            shutil.rmtree(buildDir)
+
+    configDir = os.path.join(SYSTEM.BaseDir, project, "config")
+    additionalOptions = ReadConfigFile(f"{type}.cfg", configDir)
+
+    if SYSTEM.IsWindowsPlatform:
+        additionalOptions = "-G Visual Studio 17 2022"
+
+    if type.lower() == "release":
+        additionalOptions += " -DCMAKE_BUILD_TYPE=Release"
     else:
-        if force:
-            buildDir = os.path.join(SYSTEM.BaseDir, project, "build", type)
-            if os.path.exists(buildDir):
-                logger.info(
-                    f'Removing existing build directory at "{buildDir}" for reload...'
+        additionalOptions += " -DCMAKE_BUILD_TYPE=Debug"
+
+    prefix = ""
+
+    if type == "web":
+        prefix = f"{VARIABLES.EMCMAKE}"
+
+    logger.info(f'Building project "{project}" with build type "{type}"...')
+    RunCommand(f"{prefix} cmake -S . -B build/{type} {additionalOptions}", cwd=project)
+    RunCommand(f"cmake --build build/{type} --config {type.capitalize()}", cwd=project)
+
+
+def ReadConfigFile(name: str, folder: str) -> str:
+    """
+    Reads a configuration file and returns its content as a string.
+
+    Arguments:
+        name (str): The name of the configuration file.
+        folder (str): The folder where the configuration file is located.
+
+    Returns:
+        str: The content of the configuration file.
+    """
+    configPath = os.path.join(folder, name)
+    if not os.path.exists(configPath):
+        logger.warning(f'Configuration file "{configPath}" does not exist.')
+        return ""
+
+    additionalOptions = ""
+
+    with open(configPath, "r") as cfgFile:
+        content = cfgFile.read()
+        for index, line in enumerate(content.splitlines()):
+            line = line.strip()
+
+            if line == "":
+                continue
+
+            if re.match(r"^[A-Za-z0-9_\-]+=(.*)$", line):
+                additionalOptions += f" -D{line}"
+                continue
+
+            includeMatch = re.match(r"^#include<[A-Za-z0-9_\-]+.cfg>$", line)
+
+            if includeMatch:
+                includeFileName = line[9:-1]
+                logger.debug(
+                    f'Including configuration file "{includeFileName}" from line {index + 1} in "{name}".'
                 )
+                includedOptions = ReadConfigFile(includeFileName, folder)
+                additionalOptions += f" {includedOptions}"
+                continue
 
-                shutil.rmtree(buildDir)
+            logger.warning(
+                f'Unrecognized line "{line}" in configuration file "{name}" at line {index + 1}.'
+            )
 
-        additionalOptions = ""
-
-        configFile = os.path.join(SYSTEM.BaseDir, project, f"{type}.cfg")
-
-        if os.path.exists(configFile):
-            with open(configFile, "r") as cfgFile:
-                for line in cfgFile:
-                    line = line.strip()
-                    if line and not line.startswith("#"):
-                        additionalOptions += f" -D{line}"
-
-        if SYSTEM.IsWindowsPlatform:
-            additionalOptions = "-G Visual Studio 17 2022"
-
-        if type.lower() == "release":
-            additionalOptions += " -DCMAKE_BUILD_TYPE=Release"
-        else:
-            additionalOptions += " -DCMAKE_BUILD_TYPE=Debug"
-
-        logger.info(f'Building project "{project}" with build type "{type}"...')
-        RunCommand(f"cmake -S . -B build/{type} {additionalOptions}", cwd=project)
-        RunCommand(
-            f"cmake --build build/{type} --config {type.capitalize()}", cwd=project
-        )
+    return additionalOptions
 
 
 def RunTestEngine(
@@ -187,7 +230,6 @@ def RunExample(
 
 def RunApplication(
     type: str = "debug",
-    web: bool = False,
     **kwargs: Any,
 ) -> None:
     """
@@ -196,10 +238,6 @@ def RunApplication(
     Arguments:
         type (str): The build type, either 'debug' or 'release'. Defaults to 'debug'.
     """
-    if web:
-        RunApplicationWeb(type=type, **kwargs)
-        return
-
     if SYSTEM.IsWindowsPlatform:
         appDir = os.path.join(
             SYSTEM.BaseDir,
@@ -220,7 +258,7 @@ def RunApplication(
             "Current platform is not supported for running the application."
         )
 
-    BuildCProject(**(kwargs | dict(project="app")))
+    BuildCProject(**(kwargs | dict(project="app", type=type)))
 
     logger.debug(f"Application directory resolved to: {appDir}")
 
@@ -230,33 +268,3 @@ def RunApplication(
         RunCommand(f"MEEDApp.exe", cwd=appDir)
     elif SYSTEM.IsLinuxPlatform:
         RunCommand(f"./MEEDApp", cwd=appDir)
-
-
-def RunApplicationWeb(
-    type: str = "debug",
-    **kwargs: Any,
-) -> None:
-    pass
-
-
-def BuildEngineWebLib(
-    project: str = "engine",
-    **kwargs: Any,
-) -> None:
-    from ..conf import VARIABLES
-
-    assert (
-        VARIABLES.EMCMAKE is not None
-    ), '"EMCMAKE" variable is not set in the configuration.'
-
-    projectDir = os.path.join(SYSTEM.BaseDir, project)
-
-    RunCommand(
-        f"{VARIABLES.EMCMAKE} cmake -S . -B build/webruntime -DCMAKE_BUILD_TYPE=Release -DEMCC_FORCE_STDLIBS=ON",
-        cwd=projectDir,
-    )
-
-    RunCommand(
-        f"cmake --build build/webruntime --config Release",
-        cwd=projectDir,
-    )

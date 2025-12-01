@@ -24,10 +24,11 @@ class Args:
         )
 
         parser.add_argument(
-            "--web",
-            "-w",
-            action="store_true",
-            help="Enable web support (if applicable)",
+            "--type",
+            "-t",
+            choices=["debug", "release", "web"],
+            default="debug",
+            help="Type of run (debug or release)",
         )
 
         subparser = parser.add_subparsers(dest="command", required=True)
@@ -85,25 +86,9 @@ class Args:
             default="editor",
         )
 
-        runSubParser.add_argument(
-            "--type",
-            "-t",
-            choices=["debug", "release"],
-            default="debug",
-            help="Type of run (debug or release)",
-        )
-
         exampleSubParser = subparser.add_parser(
             "example",
             help="Run an example project",
-        )
-
-        exampleSubParser.add_argument(
-            "--type",
-            "-t",
-            choices=["debug", "release"],
-            default="debug",
-            help="Type of run (debug or release)",
         )
 
         exampleSubParser.add_argument(

@@ -21,12 +21,12 @@ MEEDFindPackage(MEEDEngine "engine")
 
 target_link_libraries(
     ${PROJECT_NAME}
-    PRIVATE 
+    PUBLIC 
     MEEDEngine
 )
 
 target_compile_definitions(
     ${PROJECT_NAME}
-    PRIVATE 
+    PUBLIC 
     ${COMMON_DEFINITIONS}
 )

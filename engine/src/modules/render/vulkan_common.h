@@ -1,4 +1,6 @@
 #pragma once
+#if MEED_USE_VULKAN
+#include "MEEDEngine/platforms/platforms.h"
 #include <vulkan/vulkan.h>
 
 /**
@@ -82,9 +84,15 @@ struct MEEDVulkan
 
 extern struct MEEDVulkan* g_vulkan; // Global Vulkan instance
 
+#if MEED_DEBUG
 #define VK_ASSERT(call)                                                                                                \
 	do                                                                                                                 \
 	{                                                                                                                  \
 		VkResult result = call;                                                                                        \
 		MEED_ASSERT_MSG(result == VK_SUCCESS, "Vulkan call failed with error code: %d", result);                       \
 	} while (0)
+#else
+#define VK_ASSERT(call) call
+#endif
+
+#endif // MEED_USE_VULKAN

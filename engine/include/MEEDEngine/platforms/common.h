@@ -51,7 +51,7 @@
 
 #else
 #define MEED_ASSERT(expr)
-#define MEED_ASSERT_MSG(expr, msg)
+#define MEED_ASSERT_MSG(expr, msg, ...)
 #define MEED_UNTOUCHABLE()
 #endif
 

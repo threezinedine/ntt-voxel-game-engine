@@ -10,9 +10,5 @@
     {
         "name": "glfw",
         "url": "https://github.com/glfw/glfw.git"
-    },
-    {
-        "name": "glew",
-        "url": "https://github.com/Perlmint/glew-cmake.git"
     }
 ]

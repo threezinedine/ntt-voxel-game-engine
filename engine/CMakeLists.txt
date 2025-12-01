@@ -21,7 +21,7 @@ file(
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MEEDEngine/**/*.h
 )
 
-if (NOT WEB_BUILD)
+if (NOT PLATFORM_IS_WEB)
     MEEDFindPackage(MEEDpybind11 "Dependencies")
 endif()
 
@@ -31,7 +31,7 @@ set(PROJECT_DEFINITIONS ${COMMON_DEFINITIONS})
 set(PROJECT_PRECOMPILED_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/include/MEEDEngine/platforms/common.h)
 set(PROJECT_LIBRARIES)
 
-if (LINUX_BUILD)
+if (PLATFORM_IS_LINUX AND NOT MEED_USE_OPENGL)
     list(APPEND PROJECT_LIBRARIES X11 -rdynamic)
 endif()
 
@@ -105,47 +105,49 @@ if (MEED_USE_OPENGL)
     )
 endif()
 
-if (NOT WEB_BUILD)
+if (NOT PLATFORM_IS_WEB)
     # ================ Examples ================
     add_subdirectory("examples") # no need to build examples for web_build
 
     # ================ Tests ================
     add_subdirectory("tests")
 
-    # ================ Engine Binding Lib ================
-    set(BINDING_PROJECT "${PROJECT_NAME}Binding")
-    set(BINDING_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tmp/binding.cpp)
+    if (MEED_DEBUG)
+        # ================ Engine Binding Lib ================
+        set(BINDING_PROJECT "${PROJECT_NAME}Binding")
+        set(BINDING_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tmp/binding.cpp)
 
-    pybind11_add_module(
-        ${BINDING_PROJECT}
-        ${BINDING_SOURCE_FILES} 
-    )
+        pybind11_add_module(
+            ${BINDING_PROJECT}
+            ${BINDING_SOURCE_FILES} 
+        )
 
-    target_link_libraries(
-        ${BINDING_PROJECT}
-        PUBLIC
-        ${PROJECT_NAME}
-        PRIVATE
-        MEEDpybind11
-    )
+        target_link_libraries(
+            ${BINDING_PROJECT}
+            PUBLIC
+            ${PROJECT_NAME}
+            PRIVATE
+            MEEDpybind11
+        )
 
-    set_target_properties(
-        ${BINDING_PROJECT}
-        PROPERTIES
-        OUTPUT_NAME ${PROJECT_NAME}
-        SUFFIX ".so"
-    )
+        set_target_properties(
+            ${BINDING_PROJECT}
+            PROPERTIES
+            OUTPUT_NAME ${PROJECT_NAME}
+            SUFFIX ".so"
+        )
 
-    # ================ Copy Resources ================
-    set(LIB_FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.so)
-    set(OUTPUT_FILE ${PROJECT_BASE_DIR}/editor/Engine/${PROJECT_NAME}.so)
+        # ================ Copy Resources ================
+        set(LIB_FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.so)
+        set(OUTPUT_FILE ${PROJECT_BASE_DIR}/editor/Engine/${PROJECT_NAME}.so)
 
-    add_custom_command(
-        TARGET ${BINDING_PROJECT} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${LIB_FILE}
-        ${OUTPUT_FILE}
-        DEPENDS ${LIB_FILE}
-        COMMENT "Copying MEED Engine binding to Editor directory"
-    )
+        add_custom_command(
+            TARGET ${BINDING_PROJECT} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${LIB_FILE}
+            ${OUTPUT_FILE}
+            DEPENDS ${LIB_FILE}
+            COMMENT "Copying MEED Engine binding to Editor directory"
+        )
+    endif()
 endif()

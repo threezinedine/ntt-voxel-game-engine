@@ -291,6 +291,15 @@ u32 meedPlatformGetStringLength(const char* str)
 	return length;
 }
 
+i32 meedPlatformStringCompare(const char* str1, const char* str2)
+{
+	MEED_ASSERT(s_isInitialized == MEED_TRUE);
+	MEED_ASSERT(str1 != MEED_NULL);
+	MEED_ASSERT(str2 != MEED_NULL);
+
+	return strcmp(str1, str2);
+}
+
 void meedPlatformMemoryShutdown()
 {
 	// No-op in release mode.

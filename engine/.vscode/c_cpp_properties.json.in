@@ -10,6 +10,7 @@
             "defines": [
                 "{{ PLATFORM_DEFINE }}=1",
                 "MEED_DEBUG=1",
+                "MEED_USE_VULKAN=0",
                 "MEED_USE_OPENGL=1",
                 "PROJECT_BASE_DIR=\"{{ BASE_DIR }}\""
             ],
