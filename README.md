@@ -29,7 +29,7 @@ sudo apt install vulkan-sdk
 Todo:
 
 - [x] Vertex buffer for OpenGL backend
-- [ ] Transfer vertex buffer Vulkan backend
+- [x] Transfer vertex buffer Vulkan backend
 - [ ] Using multiple viewport for pyqt6 editor
 - [ ] Add file watcher to reload assets on change (Python)
 - [ ] Implement python tests for the Pyqt editor
