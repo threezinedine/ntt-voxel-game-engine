@@ -74,7 +74,7 @@ struct MdWindowData* mdWindowCreate(u32 width, u32 height, const char* title)
 
 	i32 framebufferWidth, framebufferHeight;
 	glfwGetFramebufferSize(pOpenGLData->pWindow, &framebufferWidth, &framebufferHeight);
-	glViewport(0, 0, framebufferWidth, framebufferHeight);
+	glViewport(0, 0, framebufferWidth, -framebufferHeight);
 
 	return pWindowData;
 }
