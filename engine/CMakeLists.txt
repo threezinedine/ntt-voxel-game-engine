@@ -39,6 +39,7 @@ if (PLATFORM_IS_LINUX)
     list(APPEND PROJECT_LIBRARIES -rdynamic)
 endif()
 
+set(CMAKE_FOLDER "MEED")
 # ================ Engine Lib ================
 add_library(
     ${PROJECT_NAME}
@@ -124,14 +125,18 @@ if (MD_USE_OPENGL)
         MEEDGlfw
     )
 endif()
+unset(CMAKE_FOLDER)
 
 if (NOT PLATFORM_IS_WEB)
     # ================ Examples ================
     add_subdirectory("examples") # no need to build examples for web_build
 
+    set(CMAKE_FOLDER "MEEDTests")
     # ================ Tests ================
     add_subdirectory("tests")
+    unset(CMAKE_FOLDER)
 
+    set(CMAKE_FOLDER "MEEDBindings")
     if (MD_DEBUG)
         # ================ Engine Binding Lib ================
         set(BINDING_PROJECT "${PROJECT_NAME}Binding")
@@ -150,16 +155,35 @@ if (NOT PLATFORM_IS_WEB)
             MEEDpybind11
         )
 
-        set_target_properties(
-            ${BINDING_PROJECT}
-            PROPERTIES
-            OUTPUT_NAME ${PROJECT_NAME}
-            SUFFIX ".so"
-        )
+        if (PLATFORM_IS_LINUX)
+            set_target_properties(
+                ${BINDING_PROJECT}
+                PROPERTIES
+                OUTPUT_NAME ${PROJECT_NAME}
+                SUFFIX ".so"
+            )
+        elseif (PLATFORM_IS_WINDOWS)
+            set_target_properties(
+                ${BINDING_PROJECT}
+                PROPERTIES
+                OUTPUT_NAME ${PROJECT_NAME}Binding
+                SUFFIX ".pyd"
+            )
+        endif()
 
         # ================ Copy Resources ================
-        set(LIB_FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.so)
-        set(OUTPUT_FILE ${PROJECT_BASE_DIR}/editor/Engine/${PROJECT_NAME}.so)
+        if (PLATFORM_IS_LINUX)
+            set(BINDING_OUTPUT_NAME ${PROJECT_NAME}.so)
+        elseif (PLATFORM_IS_WINDOWS)
+            if (MD_DEBUG)
+                set(BINDING_OUTPUT_NAME Debug/${PROJECT_NAME}Binding.pyd)
+            else()
+                set(BINDING_OUTPUT_NAME Release/${PROJECT_NAME}Binding.pyd)
+            endif()
+        endif()
+
+        set(LIB_FILE ${CMAKE_CURRENT_BINARY_DIR}/${BINDING_OUTPUT_NAME})
+        set(OUTPUT_FILE ${PROJECT_BASE_DIR}/editor/Engine/${BINDING_OUTPUT_NAME})
 
         add_custom_command(
             TARGET ${BINDING_PROJECT} POST_BUILD
@@ -170,4 +194,5 @@ if (NOT PLATFORM_IS_WEB)
             COMMENT "Copying MEED Engine binding to Editor directory"
         )
     endif()
+    unset(CMAKE_FOLDER)
 endif()

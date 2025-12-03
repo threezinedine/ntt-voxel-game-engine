@@ -11,7 +11,7 @@ extern "C" {
  * All possible color which the console can display, using
  * `mdPlatformSetColor` for modifying the color.
  */
-enum MD_BINDING MdConsoleColor : u8
+enum MD_BINDING MdConsoleColor
 {
 	MD_CONSOLE_COLOR_RESET,
 	MD_CONSOLE_COLOR_RED,

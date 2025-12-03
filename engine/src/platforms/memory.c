@@ -9,6 +9,8 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
+#elif PLATFORM_IS_WINDOWS
+#include <Windows.h>
 #else
 #error "Backtrace capturing is not implemented for this platform."
 #endif
@@ -167,6 +169,8 @@ void mdMemoryShutdown()
 		mdPrintTrace(&s_pMemoryHead->traceInfo);
 #if PLATFORM_IS_LINUX
 		exit(139); // 139 is the exit code for segmentation fault.
+#elif PLATFORM_IS_WINDOWS
+		exit(139);
 #else
 #error "Memory leak handling exit code is not implemented for this platform."
 #endif

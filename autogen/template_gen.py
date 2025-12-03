@@ -35,7 +35,13 @@ def GenerateTemplate(template: Template) -> tuple[str, list[str]]:
         )
 
         logger.debug(
-            f'All dependency files for template "{template.file}": \n{str(allDependencies).replace(", ", ",\n\t").replace("[", "[\n\t").replace("]", "\n]")}'
+            'All dependency files for binding "{}": \n{}'.format(
+                template.file,
+                str(allDependencies)
+                .replace(", ", ",\n\t")
+                .replace("[", "[\n\t")
+                .replace("]", "\n]"),
+            )
         )
 
     if not os.path.exists(templatePath):

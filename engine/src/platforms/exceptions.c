@@ -26,6 +26,8 @@ void mdRaiseException(enum MdExceptionType type, const char* message, const char
 	config.color = MD_CONSOLE_COLOR_RED;
 	mdSetConsoleConfig(config);
 	mdFormatPrint("Exception Raised: %s:%u: %s\n", file, line, errorBuffer);
+	config.color = MD_CONSOLE_COLOR_RESET;
+	mdSetConsoleConfig(config);
 
 	exit(type);
 }

@@ -23,9 +23,6 @@ def RunCommand(
 
     finalCommand = command
 
-    if SYSTEM.IsWindowsPlatform:
-        finalCommand = command.split(" ")
-
     subprocess.run(
         finalCommand,
         cwd=finalCWD,
@@ -44,10 +41,17 @@ def ValidateCommandExist(
     logger.debug(f"Checking command: {command}")
 
     try:
-        subprocess.run(
-            ["which", command],
-            check=True,
-            stdout=subprocess.DEVNULL,
-        )
+        if SYSTEM.IsWindowsPlatform:
+            subprocess.run(
+                ["where", command],
+                check=True,
+                stdout=subprocess.DEVNULL,
+            )
+        else:
+            subprocess.run(
+                ["which", command],
+                check=True,
+                stdout=subprocess.DEVNULL,
+            )
     except Exception as _:
         raise SystemError(f'The command "{command}" does not exist')

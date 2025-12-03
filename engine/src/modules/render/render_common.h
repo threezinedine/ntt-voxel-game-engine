@@ -15,3 +15,10 @@
  * @return The size in bytes of the attribute type.
  */
 u32 mdGetVertexAttributeTypeSize(enum MdVertexBufferAttributeType type);
+
+/**
+ * @brief Gets the count of components for the specified vertex attribute type.
+ * @param type The vertex buffer attribute type.
+ * @return The number of components for the attribute type.
+ */
+u32 mdGetVertexAttributeTypeCount(enum MdVertexBufferAttributeType type);

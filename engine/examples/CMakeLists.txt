@@ -6,6 +6,8 @@ file(
     "*.c"
 )
 
+set(CMAKE_FOLDER "Examples")
+
 foreach (EXAMPLE_SOURCE ${EXAMPLE_SOURCES})
     get_filename_component(EXAMPLE_FILE_NAME ${EXAMPLE_SOURCE} NAME_WE)
 
@@ -28,3 +30,5 @@ foreach (EXAMPLE_SOURCE ${EXAMPLE_SOURCES})
         ${COMMON_DEFINITIONS}
     )
 endforeach()
+
+unset(CMAKE_FOLDER)

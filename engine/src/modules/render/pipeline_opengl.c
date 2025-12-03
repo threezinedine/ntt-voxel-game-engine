@@ -22,7 +22,8 @@ static void deleteProgram(void* pData)
 	GL_ASSERT(glDeleteProgram(pOpenGLPipeline->shaderProgram));
 }
 
-struct MdPipeline* mdPipelineCreate(const char* vertexShaderPath, const char* fragmentShaderPath)
+struct MdPipeline*
+mdPipelineCreate(const char* vertexShaderPath, const char* fragmentShaderPath, struct MdVertexBuffer* pDesc)
 {
 	struct MdPipeline* pPipeline = MD_MALLOC(struct MdPipeline);
 	MD_ASSERT(pPipeline != MD_NULL);

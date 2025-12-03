@@ -16,13 +16,19 @@ class SystemInfo:
         self._intelliSenseMode = ""
 
         if self.IsWindowsPlatform:
-            self._compilerPath = "C:/Program Files/LLVM/bin/clang.exe"
+            self._baseDir = self._baseDir.replace("\\", "/")
+
+        if self.IsWindowsPlatform:
+            self._compilerPath = "clang.exe"
             self._intelliSenseMode = "windows-clang-x64"
         elif self.IsLinuxPlatform:
             self._compilerPath = "/usr/bin/g++"
             self._intelliSenseMode = "linux-gcc-arm64"
 
         self._pythonIncludeDir = sysconfig.get_path("include")
+
+        if self.IsWindowsPlatform:
+            self._pythonIncludeDir = self._pythonIncludeDir.replace("\\", "/")
 
     @property
     def IsWindowsPlatform(self) -> bool:

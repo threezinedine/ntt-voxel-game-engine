@@ -4,7 +4,6 @@ import json
 import shutil
 from typing import Any
 
-from ..conf import VARIABLES
 from ..log import logger
 from .utils import RunCommand
 from ..system_info import SYSTEM
@@ -81,7 +80,7 @@ def BuildCProject(
     additionalOptions = ReadConfigFile(f"{type}.cfg", configDir)
 
     if SYSTEM.IsWindowsPlatform:
-        additionalOptions = "-G Visual Studio 17 2022"
+        additionalOptions += " -G \"Visual Studio 17 2022\""
 
     if type.lower() == "release" or type.lower() == "web":
         additionalOptions += " -DCMAKE_BUILD_TYPE=Release"
@@ -89,6 +88,8 @@ def BuildCProject(
         additionalOptions += " -DCMAKE_BUILD_TYPE=Debug"
 
     prefix = ""
+
+    from ..conf import VARIABLES
 
     if type == "web":
         prefix = f"{VARIABLES.EMCMAKE}"
@@ -193,8 +194,8 @@ def RunExample(
             "engine",
             "build",
             type,
-            type.capitalize(),
             "examples",
+            type.capitalize(),
         )
     elif SYSTEM.IsLinuxPlatform:
         exampleDir = os.path.join(
@@ -214,18 +215,19 @@ def RunExample(
     logger.debug(f"Example directory resolved to: {exampleDir}")
 
     for example in examples:
-        if not os.path.exists(os.path.join(exampleDir, example)):
+        exampleExecutable: str = example 
+        if SYSTEM.IsWindowsPlatform:
+            exampleExecutable += ".exe"
+
+        if not os.path.exists(os.path.join(exampleDir, exampleExecutable)):
             logger.error(
-                f'Example project "{example}" does not exist at path "{os.path.join(exampleDir, example)}".'
+                f'Example project "{example}" does not exist at path "{os.path.join(exampleDir, exampleExecutable)}".'
             )
             continue
 
         logger.info(f'Running example project "{example}"...')
 
-        if SYSTEM.IsWindowsPlatform:
-            RunCommand(f"{example}.exe", cwd=exampleDir)
-        elif SYSTEM.IsLinuxPlatform:
-            RunCommand(f"./{example}", cwd=exampleDir)
+        RunCommand(f"{exampleExecutable}", cwd=exampleDir)
 
 
 def RunApplication(

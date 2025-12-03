@@ -193,12 +193,12 @@ def CreateEnvironment(
 
     pipExecutable = GetPipExecutable(dir)
     RunCommand(
-        f'"{pipExecutable}" install --upgrade pip',
+        f"{SYSTEM.PythonCommand} -m pip install --upgrade pip",
         cwd=os.path.join(SYSTEM.BaseDir, dir),
     )
 
     RunCommand(
-        f'"{pipExecutable}" install -r requirements.txt',
+        f"{pipExecutable} install -r requirements.txt",
         cwd=os.path.join(SYSTEM.BaseDir, dir),
     )
 
@@ -217,7 +217,7 @@ def RunEditorConvertUI(
 
     logger.info("Converting .ui files to .py files...")
     RunCommand(
-        f'"{GetPythonExecutable("editor")}" convert.py',
+        f'{GetPythonExecutable("editor")} convert.py',
         cwd=os.path.join(SYSTEM.BaseDir, "editor"),
     )
 
@@ -243,12 +243,12 @@ def InstallPythonDependencies(
     pipExecutable = GetPipExecutable(project)
     depsString = " ".join(dependencies)
     RunCommand(
-        f'"{pipExecutable}" install {depsString}',
+        f"{pipExecutable} install {depsString}",
         cwd=os.path.join(SYSTEM.BaseDir, project),
     )
 
     RunCommand(
-        f'"{pipExecutable}" freeze > requirements.txt',
+        f"{pipExecutable} freeze > requirements.txt",
         cwd=os.path.join(SYSTEM.BaseDir, project),
     )
 
@@ -263,7 +263,7 @@ def RunAutogen(
     """
     logger.info("Generating needed files...")
     RunCommand(
-        f'"{GetPythonExecutable("autogen")}" main.py {"--reload" if reload else ""} {"--verbose" if verbose else ""}',
+        f'{GetPythonExecutable("autogen")} main.py {"--reload " if reload else ""}{"--verbose" if verbose else ""}',
         cwd="autogen",
     )
 
@@ -276,7 +276,7 @@ def RunEditor(
     """
     logger.info("Launching code editor...")
     RunCommand(
-        f'"{GetPythonExecutable("editor")}" main.py',
+        f'{GetPythonExecutable("editor")} main.py',
         cwd="editor",
     )
 
@@ -293,7 +293,7 @@ def BuildEditor(
     iconPath = os.path.join(assetDir, "icons", "meed-log.ico")
 
     RunCommand(
-        f'"{GetPyinstallerExecutable("editor")}" --onefile main.py --name Meed --icon {iconPath}',
+        f'{GetPyinstallerExecutable("editor")} --onefile main.py --name Meed --icon {iconPath}',
         cwd="editor",
     )
 
@@ -319,7 +319,7 @@ def OpenDesigner(
     """
     logger.info("Launching GUI designer...")
     RunCommand(
-        f'"{GetDesignerExecutable("editor")}"',
+        f'{GetDesignerExecutable("editor")}',
         cwd="editor",
     )
 
@@ -338,6 +338,6 @@ def RunPythonTest(
     logger.info("Running test suite...")
 
     RunCommand(
-        f'"{GetPytestExecutable(project)}" {"-k " + filter if filter else ""}',
+        f'{GetPytestExecutable(project)} {"-k " + filter if filter else ""}',
         cwd=os.path.join(SYSTEM.BaseDir, project),
     )

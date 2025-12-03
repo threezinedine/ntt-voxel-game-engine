@@ -57,6 +57,7 @@ def _CTypeConvert(cType: str) -> str:
         "unsigned char",
         "char",
         "signed char",
+        "size_t",
     ]:
         return "int"
     elif cType in ["float", "double"]:
@@ -225,7 +226,13 @@ def GenerateBindings(
         )
 
         logger.debug(
-            f'All dependency files for binding "{binding.file}": \n{str(dependenciesFiles).replace(", ", ",\n\t").replace("[", "[\n\t").replace("]", "\n]")}'
+            'All dependency files for binding "{}": \n{}'.format(
+                binding.file,
+                str(dependenciesFiles)
+                .replace(", ", ",\n\t")
+                .replace("[", "[\n\t")
+                .replace("]", "\n]"),
+            )
         )
 
         hasModified = False

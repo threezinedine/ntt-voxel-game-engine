@@ -25,6 +25,12 @@ struct OpenGLShader
 	u32 shaderID; ///< OpenGL shader ID.
 };
 
+struct OpenGLVertexBuffer
+{
+	u32 vboID; ///< OpenGL Vertex Buffer Object ID.
+	u32 vaoID; ///< OpenGL Vertex Array Object ID.
+};
+
 extern struct OpenGLRenderData* s_pRenderData;
 
 #define GL_ASSERT(exp)                                                                                                 \

@@ -9,7 +9,7 @@ extern "C" {
 /**
  * Enumeration of log levels used for categorizing log messages.
  */
-enum MdLogLevel : u8
+enum MdLogLevel
 {
 	MD_LOG_LEVEL_VERBOSE, ///< Detailed information, typically of interest only when diagnosing problems.
 	MD_LOG_LEVEL_DEBUG,	  ///< Information useful to developers for debugging the application.

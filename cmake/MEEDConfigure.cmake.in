@@ -72,6 +72,10 @@ macro(MdSetup)
     set(COMMON_OPTIONS "")
     set(COMMON_DEFINITIONS "")
 
+    if (MSVC)
+        set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+    endif()
+
     MEEDOption(CMAKE_BUILD_TYPE Debug)
     MEEDDetectPlatform()
 
@@ -97,9 +101,9 @@ macro(MEEDFindPackage PACKAGE_NAME FOLDER)
     set(${PACKAGE_NAME}_DIR "${CMAKE_MODULE_DIR}")
 
     find_package(${PACKAGE_NAME} REQUIRED)
-    unset(CMAKE_FOLDER CACHE)
+    unset(CMAKE_FOLDER)
 
-    if (NOT PLATFORM_IS_WEB)
+    if (PLATFORM_IS_LINUX)
         set(CMAKE_C_FLAGS "-m64")
         set(CMAKE_CXX_FLAGS "-m64")
     endif()
