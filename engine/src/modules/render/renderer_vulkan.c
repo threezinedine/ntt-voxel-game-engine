@@ -384,7 +384,18 @@ static void getQueueFamilyIndices()
 
 	for (i32 queueFamilyIndex = 0; queueFamilyIndex < queueFamiliesCount; ++queueFamilyIndex)
 	{
-		VkQueueFamilyProperties currentFamily = pQueueFamilies[queueFamilyIndex];
+		VkQueueFamilyProperties currentFamily  = pQueueFamilies[queueFamilyIndex];
+		VkBool32				presentSupport = VK_FALSE;
+		vkGetPhysicalDeviceSurfaceSupportKHR(
+			g_vulkan->physicalDevice, queueFamilyIndex, g_vulkan->surface, &presentSupport);
+
+		if (g_vulkan->queueFamilies.presentFamily == NULL_GRAPHICS_FAMILY)
+		{
+			if (presentSupport)
+			{
+				g_vulkan->queueFamilies.presentFamily = queueFamilyIndex;
+			}
+		}
 
 		if (g_vulkan->queueFamilies.graphicsFamily == NULL_GRAPHICS_FAMILY &&
 			(currentFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT))
@@ -398,22 +409,9 @@ static void getQueueFamilyIndices()
 			g_vulkan->queueFamilies.computeFamily = queueFamilyIndex;
 		}
 
-		if (g_vulkan->queueFamilies.transferFamily == NULL_GRAPHICS_FAMILY &&
-			(currentFamily.queueFlags & VK_QUEUE_TRANSFER_BIT))
+		if (currentFamily.queueFlags & VK_QUEUE_TRANSFER_BIT)
 		{
 			g_vulkan->queueFamilies.transferFamily = queueFamilyIndex;
-		}
-
-		if (g_vulkan->queueFamilies.presentFamily == NULL_GRAPHICS_FAMILY)
-		{
-			VkBool32 presentSupport = VK_FALSE;
-			vkGetPhysicalDeviceSurfaceSupportKHR(
-				g_vulkan->physicalDevice, queueFamilyIndex, g_vulkan->surface, &presentSupport);
-
-			if (presentSupport)
-			{
-				g_vulkan->queueFamilies.presentFamily = queueFamilyIndex;
-			}
 		}
 	}
 
@@ -422,6 +420,9 @@ static void getQueueFamilyIndices()
 
 	MD_ASSERT_MSG(g_vulkan->queueFamilies.presentFamily != NULL_GRAPHICS_FAMILY,
 				  "Failed to find a present queue family.");
+
+	MD_ASSERT_MSG(g_vulkan->queueFamilies.transferFamily != NULL_GRAPHICS_FAMILY,
+				  "Failed to find a unique transfer queue family.");
 
 	MD_FREE_ARRAY(pQueueFamilies, VkQueueFamilyProperties, queueFamiliesCount);
 }
@@ -439,6 +440,7 @@ static void createDevice()
 	i32 familyIndices[] = {
 		g_vulkan->queueFamilies.graphicsFamily,
 		g_vulkan->queueFamilies.presentFamily,
+		g_vulkan->queueFamilies.transferFamily,
 	};
 
 	struct MdSet* pSet				 = mdSetCreate(queueFamilyCompare);
@@ -509,9 +511,11 @@ static void getQueues()
 	MD_ASSERT(g_vulkan->device != MD_NULL);
 	MD_ASSERT(g_vulkan->queueFamilies.graphicsFamily != NULL_GRAPHICS_FAMILY);
 	MD_ASSERT(g_vulkan->queueFamilies.presentFamily != NULL_GRAPHICS_FAMILY);
+	MD_ASSERT(g_vulkan->queueFamilies.transferFamily != NULL_GRAPHICS_FAMILY);
 
 	vkGetDeviceQueue(g_vulkan->device, g_vulkan->queueFamilies.graphicsFamily, 0, &g_vulkan->graphicsQueue);
 	vkGetDeviceQueue(g_vulkan->device, g_vulkan->queueFamilies.presentFamily, 0, &g_vulkan->presentQueue);
+	vkGetDeviceQueue(g_vulkan->device, g_vulkan->queueFamilies.transferFamily, 0, &g_vulkan->transferQueue);
 }
 
 static void chooseExtent();
@@ -685,7 +689,7 @@ static void createSwapchain()
 		};
 
 		swapchainCreateInfo.imageSharingMode	  = VK_SHARING_MODE_CONCURRENT;
-		swapchainCreateInfo.queueFamilyIndexCount = 2;
+		swapchainCreateInfo.queueFamilyIndexCount = MD_ARRAY_SIZE(queueFamilyIndices);
 		swapchainCreateInfo.pQueueFamilyIndices	  = queueFamilyIndices;
 	}
 	else
@@ -877,13 +881,13 @@ static void createCommandPools()
 	MD_ASSERT(g_vulkan->device != MD_NULL);
 	MD_ASSERT(g_vulkan->graphicsCommandPool == MD_NULL);
 	MD_ASSERT(g_vulkan->presentCommandPool == MD_NULL);
+	MD_ASSERT(g_vulkan->transferCommandPool == MD_NULL);
 
 	VkCommandPoolCreateInfo commandPoolCreateInfo = {};
 	commandPoolCreateInfo.sType					  = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	commandPoolCreateInfo.flags					  = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 	commandPoolCreateInfo.queueFamilyIndex		  = g_vulkan->queueFamilies.graphicsFamily;
 	VK_ASSERT(vkCreateCommandPool(g_vulkan->device, &commandPoolCreateInfo, MD_NULL, &g_vulkan->graphicsCommandPool));
-	mdReleaseStackPush(s_releaseStack, MD_NULL, deleteCommandPool);
 
 	if (g_vulkan->queueFamilies.presentFamily != g_vulkan->queueFamilies.graphicsFamily)
 	{
@@ -893,12 +897,27 @@ static void createCommandPools()
 		presentCommandPoolCreateInfo.queueFamilyIndex		 = g_vulkan->queueFamilies.presentFamily;
 		VK_ASSERT(vkCreateCommandPool(
 			g_vulkan->device, &presentCommandPoolCreateInfo, MD_NULL, &g_vulkan->presentCommandPool));
-		mdReleaseStackPush(s_releaseStack, MD_NULL, deleteCommandPool);
 	}
 	else
 	{
 		g_vulkan->presentCommandPool = g_vulkan->graphicsCommandPool;
 	}
+
+	if (g_vulkan->queueFamilies.transferFamily != g_vulkan->queueFamilies.graphicsFamily)
+	{
+		VkCommandPoolCreateInfo transferCommandPoolCreateInfo = {};
+		transferCommandPoolCreateInfo.sType					  = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		transferCommandPoolCreateInfo.flags					  = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		transferCommandPoolCreateInfo.queueFamilyIndex		  = g_vulkan->queueFamilies.transferFamily;
+		VK_ASSERT(vkCreateCommandPool(
+			g_vulkan->device, &transferCommandPoolCreateInfo, MD_NULL, &g_vulkan->transferCommandPool));
+	}
+	else
+	{
+		g_vulkan->transferCommandPool = g_vulkan->graphicsCommandPool;
+	}
+
+	mdReleaseStackPush(s_releaseStack, MD_NULL, deleteCommandPool);
 }
 
 static void deleteCommandPool(void* pData)
@@ -915,6 +934,12 @@ static void deleteCommandPool(void* pData)
 	{
 		MD_ASSERT(g_vulkan->presentCommandPool != MD_NULL);
 		vkDestroyCommandPool(g_vulkan->device, g_vulkan->presentCommandPool, MD_NULL);
+	}
+
+	if (g_vulkan->queueFamilies.graphicsFamily != g_vulkan->queueFamilies.transferFamily)
+	{
+		MD_ASSERT(g_vulkan->transferCommandPool != MD_NULL);
+		vkDestroyCommandPool(g_vulkan->device, g_vulkan->transferCommandPool, MD_NULL);
 	}
 }
 
@@ -933,6 +958,14 @@ static void allocateCommandBuffers()
 	graphicsCommandBufferAllocateInfo.commandBufferCount		  = FRAME_IN_FLIGHT_COUNT;
 	VK_ASSERT(vkAllocateCommandBuffers(
 		g_vulkan->device, &graphicsCommandBufferAllocateInfo, g_vulkan->graphicsCommandBuffers));
+
+	VkCommandBufferAllocateInfo transferCommandBufferAllocateInfo = {};
+	transferCommandBufferAllocateInfo.sType						  = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	transferCommandBufferAllocateInfo.commandPool				  = g_vulkan->transferCommandPool;
+	transferCommandBufferAllocateInfo.level						  = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	transferCommandBufferAllocateInfo.commandBufferCount		  = 1;
+	VK_ASSERT(vkAllocateCommandBuffers(
+		g_vulkan->device, &transferCommandBufferAllocateInfo, &g_vulkan->transferCommandBuffer));
 	mdReleaseStackPush(s_releaseStack, MD_NULL, freeCommandBuffers);
 }
 
@@ -946,6 +979,8 @@ static void freeCommandBuffers(void* pData)
 
 	vkFreeCommandBuffers(
 		g_vulkan->device, g_vulkan->graphicsCommandPool, FRAME_IN_FLIGHT_COUNT, g_vulkan->graphicsCommandBuffers);
+
+	vkFreeCommandBuffers(g_vulkan->device, g_vulkan->transferCommandPool, 1, &g_vulkan->transferCommandBuffer);
 }
 
 static void deleteSyncObjects(void*);

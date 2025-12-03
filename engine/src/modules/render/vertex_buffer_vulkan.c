@@ -14,10 +14,14 @@ static void freeMemory(void*);
 
 static VkFormat getVulkanFormatFromAttributeType(enum MdVertexBufferAttributeType type);
 
+static void createStaticVertexBuffer(struct MdVertexBuffer* pVertexBuffer);
+static void createDynamicVertexBuffer(struct MdVertexBuffer* pVertexBuffer);
+
 struct MdVertexBuffer* mdVertexBufferCreate(enum MdVertexBufferAttributeType* layout,
 											u32								  attributesCount,
 											u32								  verticesCount,
-											MdVertexBufferWriteCallback		  writeCallback)
+											MdVertexBufferWriteCallback		  writeCallback,
+											enum MdVertexBufferType			  bufferType)
 {
 	struct MdVertexBuffer* pVertexBuffer = MD_MALLOC(struct MdVertexBuffer);
 	mdMemorySet(pVertexBuffer, 0, sizeof(struct MdVertexBuffer));
@@ -25,6 +29,7 @@ struct MdVertexBuffer* mdVertexBufferCreate(enum MdVertexBufferAttributeType* la
 
 	pVertexBuffer->verticesCount   = verticesCount;
 	pVertexBuffer->attributesCount = attributesCount;
+	pVertexBuffer->bufferType	   = bufferType;
 
 	MD_ASSERT_MSG(writeCallback != NULL, "Vertex buffer write callback cannot be NULL");
 	pVertexBuffer->writeCallback = writeCallback;
@@ -64,25 +69,20 @@ struct MdVertexBuffer* mdVertexBufferCreate(enum MdVertexBufferAttributeType* la
 
 	MD_ASSERT(g_vulkan != MD_NULL);
 
-	createBuffer(&pVulkanVertexBuffer->buffer,
-				 pVertexBuffer->bufferSize,
-				 g_vulkan->queueFamilies.graphicsFamily,
-				 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-	MD_ASSERT(pVulkanVertexBuffer->buffer != VK_NULL_HANDLE);
-	mdReleaseStackPush(pVertexBuffer->pReleaseStack, &pVulkanVertexBuffer->buffer, deleteBuffer);
+	switch (pVertexBuffer->bufferType)
+	{
+	case MD_VERTEX_BUFFER_TYPE_STATIC:
+		createStaticVertexBuffer(pVertexBuffer);
+		break;
 
-	MD_ASSERT(g_vulkan->device != MD_NULL);
+	case MD_VERTEX_BUFFER_TYPE_DYNAMIC:
+		createDynamicVertexBuffer(pVertexBuffer);
+		break;
 
-	VkMemoryRequirements memoryRequirements;
-	vkGetBufferMemoryRequirements(g_vulkan->device, pVulkanVertexBuffer->buffer, &memoryRequirements);
-
-	allocateMemory(&pVulkanVertexBuffer->bufferMemory,
-				   &memoryRequirements,
-				   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	MD_ASSERT(pVulkanVertexBuffer->bufferMemory != VK_NULL_HANDLE);
-	mdReleaseStackPush(pVertexBuffer->pReleaseStack, &pVulkanVertexBuffer->bufferMemory, freeMemory);
-
-	VK_ASSERT(vkBindBufferMemory(g_vulkan->device, pVulkanVertexBuffer->buffer, pVulkanVertexBuffer->bufferMemory, 0));
+	default:
+		MD_UNTOUCHABLE();
+		break;
+	}
 
 	return pVertexBuffer;
 }
@@ -101,7 +101,89 @@ void mdVertexBufferBind(struct MdVertexBuffer* pVertexBuffer)
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &pVulkanVertexBuffer->buffer, &offset);
 }
 
+static void writeDataStatic(struct MdVertexBuffer* pVertexBuffer, const void* pData);
+static void writeDataDynamic(struct MdVertexBuffer* pVertexBuffer, const void* pData);
+
 u32 mdVertexBufferWrite(struct MdVertexBuffer* pVertexBuffer, const void* pData)
+{
+	MD_ASSERT(g_vulkan != MD_NULL);
+	MD_ASSERT(g_vulkan->device != MD_NULL);
+	MD_ASSERT(pVertexBuffer != MD_NULL);
+
+	switch (pVertexBuffer->bufferType)
+	{
+	case MD_VERTEX_BUFFER_TYPE_STATIC:
+		writeDataStatic(pVertexBuffer, pData);
+		break;
+	case MD_VERTEX_BUFFER_TYPE_DYNAMIC:
+		writeDataDynamic(pVertexBuffer, pData);
+		break;
+	default:
+		MD_UNTOUCHABLE();
+		break;
+	}
+
+	pVertexBuffer->currentMemoryOffset += pVertexBuffer->stride;
+	pVertexBuffer->currentMemoryOffset %= pVertexBuffer->bufferSize;
+
+	return pVertexBuffer->currentMemoryOffset;
+}
+
+static void writeDataStatic(struct MdVertexBuffer* pVertexBuffer, const void* pData)
+{
+	MD_ASSERT(g_vulkan != MD_NULL);
+	MD_ASSERT(g_vulkan->device != MD_NULL);
+	MD_ASSERT(g_vulkan->transferCommandBuffer != MD_NULL);
+	MD_ASSERT(pVertexBuffer != MD_NULL);
+	MD_ASSERT(pVertexBuffer->pInternal != MD_NULL);
+
+	struct VulkanVertexBuffer* pVulkanVertexBuffer = (struct VulkanVertexBuffer*)pVertexBuffer->pInternal;
+
+	u8* bufferAddr = MD_NULL;
+
+	VK_ASSERT(vkMapMemory(g_vulkan->device,
+						  pVulkanVertexBuffer->stagingBufferMemory,
+						  pVertexBuffer->currentMemoryOffset,
+						  pVertexBuffer->stride,
+						  0,
+						  (void**)&bufferAddr));
+
+	MD_ASSERT(bufferAddr != MD_NULL);
+
+	pVertexBuffer->writeCallback(bufferAddr, pData);
+
+	vkUnmapMemory(g_vulkan->device, pVulkanVertexBuffer->stagingBufferMemory);
+
+	// Copy from staging buffer to vertex buffer
+	if (pVertexBuffer->currentMemoryOffset + pVertexBuffer->stride >= pVertexBuffer->bufferSize)
+	{
+		VkCommandBufferBeginInfo beginInfo = {};
+		beginInfo.sType					   = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags					   = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		VK_ASSERT(vkBeginCommandBuffer(g_vulkan->transferCommandBuffer, &beginInfo));
+
+		VkBufferCopy copyRegion = {};
+		copyRegion.srcOffset	= 0;
+		copyRegion.dstOffset	= 0;
+		copyRegion.size			= pVertexBuffer->bufferSize;
+		vkCmdCopyBuffer(g_vulkan->transferCommandBuffer,
+						pVulkanVertexBuffer->stagingBuffer,
+						pVulkanVertexBuffer->buffer,
+						1,
+						&copyRegion);
+
+		VK_ASSERT(vkEndCommandBuffer(g_vulkan->transferCommandBuffer));
+
+		VkSubmitInfo submitInfo		  = {};
+		submitInfo.sType			  = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers	  = &g_vulkan->transferCommandBuffer;
+		VK_ASSERT(vkQueueSubmit(g_vulkan->transferQueue, 1, &submitInfo, VK_NULL_HANDLE));
+		vkQueueWaitIdle(g_vulkan->transferQueue);
+	}
+}
+
+static void writeDataDynamic(struct MdVertexBuffer* pVertexBuffer, const void* pData)
 {
 	MD_ASSERT(g_vulkan != MD_NULL);
 	MD_ASSERT(g_vulkan->device != MD_NULL);
@@ -123,11 +205,6 @@ u32 mdVertexBufferWrite(struct MdVertexBuffer* pVertexBuffer, const void* pData)
 	pVertexBuffer->writeCallback(bufferAddr, pData);
 
 	vkUnmapMemory(g_vulkan->device, pVulkanVertexBuffer->bufferMemory);
-
-	pVertexBuffer->currentMemoryOffset += pVertexBuffer->stride;
-	pVertexBuffer->currentMemoryOffset %= pVertexBuffer->bufferSize;
-
-	return pVertexBuffer->currentMemoryOffset;
 }
 
 void mdVertexBufferDestroy(struct MdVertexBuffer* pVertexBuffer)
@@ -243,6 +320,80 @@ static VkFormat getVulkanFormatFromAttributeType(enum MdVertexBufferAttributeTyp
 		MD_UNTOUCHABLE();
 		return VK_FORMAT_UNDEFINED;
 	}
+}
+
+static void createStaticVertexBuffer(struct MdVertexBuffer* pVertexBuffer)
+{
+	MD_ASSERT(g_vulkan != MD_NULL);
+	MD_ASSERT(g_vulkan->device != MD_NULL);
+	MD_ASSERT(pVertexBuffer != MD_NULL);
+	MD_ASSERT(pVertexBuffer->pInternal != MD_NULL);
+
+	struct VulkanVertexBuffer* pVulkanVertexBuffer = (struct VulkanVertexBuffer*)pVertexBuffer->pInternal;
+
+	createBuffer(&pVulkanVertexBuffer->stagingBuffer,
+				 pVertexBuffer->bufferSize,
+				 g_vulkan->queueFamilies.graphicsFamily,
+				 VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+	MD_ASSERT(pVulkanVertexBuffer->stagingBuffer != VK_NULL_HANDLE);
+	mdReleaseStackPush(pVertexBuffer->pReleaseStack, &pVulkanVertexBuffer->stagingBuffer, deleteBuffer);
+
+	VkMemoryRequirements stagingMemoryRequirements;
+	vkGetBufferMemoryRequirements(g_vulkan->device, pVulkanVertexBuffer->stagingBuffer, &stagingMemoryRequirements);
+
+	allocateMemory(&pVulkanVertexBuffer->stagingBufferMemory,
+				   &stagingMemoryRequirements,
+				   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	MD_ASSERT(pVulkanVertexBuffer->stagingBufferMemory != VK_NULL_HANDLE);
+	mdReleaseStackPush(pVertexBuffer->pReleaseStack, &pVulkanVertexBuffer->stagingBufferMemory, freeMemory);
+
+	VK_ASSERT(vkBindBufferMemory(
+		g_vulkan->device, pVulkanVertexBuffer->stagingBuffer, pVulkanVertexBuffer->stagingBufferMemory, 0));
+
+	createBuffer(&pVulkanVertexBuffer->buffer,
+				 pVertexBuffer->bufferSize,
+				 g_vulkan->queueFamilies.graphicsFamily,
+				 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+	MD_ASSERT(pVulkanVertexBuffer->buffer != VK_NULL_HANDLE);
+	mdReleaseStackPush(pVertexBuffer->pReleaseStack, &pVulkanVertexBuffer->buffer, deleteBuffer);
+
+	VkMemoryRequirements memoryRequirements;
+	vkGetBufferMemoryRequirements(g_vulkan->device, pVulkanVertexBuffer->buffer, &memoryRequirements);
+	allocateMemory(&pVulkanVertexBuffer->bufferMemory, &memoryRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	MD_ASSERT(pVulkanVertexBuffer->bufferMemory != VK_NULL_HANDLE);
+	mdReleaseStackPush(pVertexBuffer->pReleaseStack, &pVulkanVertexBuffer->bufferMemory, freeMemory);
+
+	VK_ASSERT(vkBindBufferMemory(g_vulkan->device, pVulkanVertexBuffer->buffer, pVulkanVertexBuffer->bufferMemory, 0));
+}
+
+static void createDynamicVertexBuffer(struct MdVertexBuffer* pVertexBuffer)
+{
+	MD_ASSERT(g_vulkan != MD_NULL);
+	MD_ASSERT(g_vulkan->device != MD_NULL);
+	MD_ASSERT(pVertexBuffer != MD_NULL);
+	MD_ASSERT(pVertexBuffer->pInternal != MD_NULL);
+
+	struct VulkanVertexBuffer* pVulkanVertexBuffer = (struct VulkanVertexBuffer*)pVertexBuffer->pInternal;
+
+	createBuffer(&pVulkanVertexBuffer->buffer,
+				 pVertexBuffer->bufferSize,
+				 g_vulkan->queueFamilies.graphicsFamily,
+				 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+	MD_ASSERT(pVulkanVertexBuffer->buffer != VK_NULL_HANDLE);
+	mdReleaseStackPush(pVertexBuffer->pReleaseStack, &pVulkanVertexBuffer->buffer, deleteBuffer);
+
+	MD_ASSERT(g_vulkan->device != MD_NULL);
+
+	VkMemoryRequirements memoryRequirements;
+	vkGetBufferMemoryRequirements(g_vulkan->device, pVulkanVertexBuffer->buffer, &memoryRequirements);
+
+	allocateMemory(&pVulkanVertexBuffer->bufferMemory,
+				   &memoryRequirements,
+				   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	MD_ASSERT(pVulkanVertexBuffer->bufferMemory != VK_NULL_HANDLE);
+	mdReleaseStackPush(pVertexBuffer->pReleaseStack, &pVulkanVertexBuffer->bufferMemory, freeMemory);
+
+	VK_ASSERT(vkBindBufferMemory(g_vulkan->device, pVulkanVertexBuffer->buffer, pVulkanVertexBuffer->bufferMemory, 0));
 }
 
 #endif // MD_USE_VULKAN

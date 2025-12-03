@@ -46,6 +46,9 @@ struct VulkanVertexBuffer
 	VkBuffer	   buffer;
 	VkDeviceMemory bufferMemory;
 
+	VkBuffer	   stagingBuffer;		///< For static buffers only
+	VkDeviceMemory stagingBufferMemory; ///< For static buffers only
+
 	VkVertexInputBindingDescription	  bindingDescription;
 	VkVertexInputAttributeDescription attributeDescriptions[MEED_VERTEX_BUFFER_MAX_ATTRIBUTES];
 };
@@ -67,6 +70,7 @@ struct MEEDVulkan
 
 	VkQueue graphicsQueue;
 	VkQueue presentQueue;
+	VkQueue transferQueue;
 
 	VkSurfaceFormatKHR			  surfaceFormat;
 	VkPresentModeKHR			  presentMode;
@@ -82,6 +86,9 @@ struct MEEDVulkan
 
 	VkCommandPool graphicsCommandPool;
 	VkCommandPool presentCommandPool;
+	VkCommandPool transferCommandPool;
+
+	VkCommandBuffer transferCommandBuffer; /// Used for copying data to GPU buffers
 
 	VkCommandBuffer graphicsCommandBuffers[FRAME_IN_FLIGHT_COUNT];
 

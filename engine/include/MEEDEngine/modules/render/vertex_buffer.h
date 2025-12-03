@@ -26,6 +26,15 @@ enum MdVertexBufferAttributeType
 };
 
 /**
+ * List of all vertex buffer types.
+ */
+enum MdVertexBufferType
+{
+	MD_VERTEX_BUFFER_TYPE_STATIC,  ///< The vertex buffer is static and will not change often.
+	MD_VERTEX_BUFFER_TYPE_DYNAMIC, ///< Should be used for vertex buffers that change frequently (every frame).
+};
+
+/**
  * The method which is used for receiving the vertex data and write it into the buffer which will
  * 	be sent to the GPU, the offset will be updated automatically after each write. The write data must be
  * 	exactly equal to the size of the vertex defined by the layout else errors may occur (no checks are done).
@@ -44,6 +53,7 @@ struct MdVertexBuffer
 	u32							stride;			 ///< The stride (in bytes) between consecutive vertices in the buffer.
 	u32							bufferSize;		 ///< Total size of the vertex buffer in bytes.
 	MdVertexBufferWriteCallback writeCallback;	 ///< Callback function for writing vertex data.
+	enum MdVertexBufferType		bufferType;		 ///< Type of the vertex buffer (static or dynamic).
 
 	// Caching
 	u32 currentMemoryOffset; ///< Current memory offset for writing vertex data. If exceeded, return to 0.
@@ -63,6 +73,7 @@ struct MdVertexBuffer
  * @param attributesCount The number of attributes in the vertex.
  * @param verticesCount The number of vertices the buffer will hold.
  * @param writeCallback A callback function to write vertex data into the buffer, cannot be NULL.
+ * @param bufferType The type of the vertex buffer (static or dynamic).
  * @return A pointer to the created MdVertexBuffer.
  *
  * @note The data of the vertex buffer will be write later
@@ -70,7 +81,8 @@ struct MdVertexBuffer
 struct MdVertexBuffer* mdVertexBufferCreate(enum MdVertexBufferAttributeType* layout,
 											u32								  attributesCount,
 											u32								  verticesCount,
-											MdVertexBufferWriteCallback		  writeCallback);
+											MdVertexBufferWriteCallback		  writeCallback,
+											enum MdVertexBufferType			  bufferType);
 
 /**
  * Trigger that binds the specified vertex buffer for rendering.
@@ -85,6 +97,9 @@ void mdVertexBufferBind(struct MdVertexBuffer* pVertexBuffer);
  * @param pData A pointer to the vertex data to write.
  *
  * @return The current offset after writing the data.
+ *
+ * @note With the static buffer type, if the buffer is full, the data will be transferred to the GPU and the offset
+ * reset to 0. With the dynamic buffer type, if the buffer is full, the offset will simply reset to 0.
  */
 u32 mdVertexBufferWrite(struct MdVertexBuffer* pVertexBuffer, const void* pData);
 

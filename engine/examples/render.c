@@ -32,8 +32,8 @@ int main(void)
 
 	mdRenderInitialize(pWindow);
 
-	struct MdVertexBuffer* pVertexBuffer =
-		mdVertexBufferCreate(vertexLayout, MD_ARRAY_SIZE(vertexLayout), 3, WriteVertexData);
+	struct MdVertexBuffer* pVertexBuffer = mdVertexBufferCreate(
+		vertexLayout, MD_ARRAY_SIZE(vertexLayout), 3, WriteVertexData, MD_VERTEX_BUFFER_TYPE_STATIC);
 
 	u32 verticesCount = MD_ARRAY_SIZE(vertices);
 	for (u32 vertexIndex = 0u; vertexIndex < verticesCount; ++vertexIndex)
