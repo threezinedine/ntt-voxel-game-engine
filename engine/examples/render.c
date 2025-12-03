@@ -23,7 +23,12 @@ int main(void)
 {
 	mdMemoryInitialize();
 	mdWindowInitialize();
+
+#if MD_USE_VULKAN
 	struct MdWindowData* pWindow = mdWindowCreate(1600, 1400, "MEEDEngine Vulkan Renderer Example");
+#else
+	struct MdWindowData* pWindow = mdWindowCreate(1600, 1400, "MEEDEngine OpenGL Renderer Example");
+#endif
 
 	mdRenderInitialize(pWindow);
 
@@ -85,5 +90,12 @@ int main(void)
 static void WriteVertexData(u8* pDest, const void* pData)
 {
 	struct Vertex* pVertexData = (struct Vertex*)pData;
+#if MD_USE_OPENGL
+	struct Vertex clone = {};
+	mdMemoryCopy(&clone, pVertexData, sizeof(struct Vertex));
+	clone.position[1] = -clone.position[1];
+	mdMemoryCopy(pDest, &clone, sizeof(struct Vertex));
+#else
 	mdMemoryCopy(pDest, pVertexData, sizeof(struct Vertex));
+#endif
 }
