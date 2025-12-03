@@ -43,6 +43,8 @@ if (PLATFORM_IS_WEB)
         PUBLIC
         -sUSE_GLFW=3
         -sUSE_WEBGL2=1
+        -sMIN_WEBGL_VERSION=2
+        -sMAX_WEBGL_VERSION=2
         -sFULL_ES3=1
         --preload-file ${PROJECT_BASE_DIR}/engine/assets/shaders/web@shaders/
     )

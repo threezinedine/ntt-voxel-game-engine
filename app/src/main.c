@@ -46,7 +46,7 @@ int main(void)
 	}
 
 #if PLATFORM_IS_WEB
-	pPipeline = mdPipelineCreate("shaders/triangle.vert", "shaders/triangle.frag");
+	pPipeline = mdPipelineCreate("shaders/triangle.vert", "shaders/triangle.frag", pVertexBuffer);
 #elif MD_USE_VULKAN
 	pPipeline = mdPipelineCreate(MD_STRINGIFY(PROJECT_BASE_DIR) "/app/build/debug/shaders/triangle.vert.spv",
 								 MD_STRINGIFY(PROJECT_BASE_DIR) "/app/build/debug/shaders/triangle.frag.spv",

@@ -94,10 +94,14 @@ u32 mdVertexBufferWrite(struct MdVertexBuffer* pVertexBuffer, const void* pData)
 	struct OpenGLVertexBuffer* pOpenGLVertexBuffer = (struct OpenGLVertexBuffer*)pVertexBuffer->pInternal;
 	GL_ASSERT(glBindBuffer(GL_ARRAY_BUFFER, pOpenGLVertexBuffer->vboID));
 
-	u8* pTransferBuffer = (u8*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-	MD_ASSERT_MSG(pTransferBuffer != MD_NULL, "Failed to map vertex buffer for writing.");
-	pVertexBuffer->writeCallback(pTransferBuffer + pVertexBuffer->currentMemoryOffset, pData);
-	GL_ASSERT(glUnmapBuffer(GL_ARRAY_BUFFER));
+	u8* newDataBuffer = MD_MALLOC_ARRAY(u8, pVertexBuffer->stride);
+	MD_ASSERT(newDataBuffer != MD_NULL);
+	pVertexBuffer->writeCallback(newDataBuffer, pData);
+
+	GL_ASSERT(
+		glBufferSubData(GL_ARRAY_BUFFER, pVertexBuffer->currentMemoryOffset, pVertexBuffer->stride, newDataBuffer));
+
+	MD_FREE_ARRAY(newDataBuffer, u8, pVertexBuffer->stride);
 
 	pVertexBuffer->currentMemoryOffset += pVertexBuffer->stride;
 	return pVertexBuffer->currentMemoryOffset;
