@@ -58,7 +58,7 @@ struct MdVertexBuffer* mdVertexBufferCreate(enum MdVertexBufferAttributeType* la
 										pVertexBuffer->stride,
 										(const void*)(uintptr_t)offset));
 		GL_ASSERT(glEnableVertexAttribArray(attributeIndex));
-		offset += 0;
+		offset += mdGetVertexAttributeTypeSize(layout[attributeIndex]);
 	}
 
 	GL_ASSERT(glBindVertexArray(0));

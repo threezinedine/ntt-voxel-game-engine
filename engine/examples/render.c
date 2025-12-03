@@ -15,8 +15,8 @@ enum MdVertexBufferAttributeType vertexLayout[] = {
 
 static struct Vertex vertices[] = {
 	{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}}, // Bottom vertex (Red)
-	{{0.5f, 0.5f},  {0.0f, 1.0f, 0.0f}}, // Right vertex (Green)
-	{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}, // Left vertex (Blue)
+	{{0.5f, 0.5f},  {1.0f, 0.0f, 0.0f}}, // Right vertex (Green)
+	{{-0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}}, // Left vertex (Blue)
 };
 
 int main(void)
